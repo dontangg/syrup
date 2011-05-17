@@ -1,0 +1,28 @@
+= Syrup
+
+Syrup is made from a yummy maple extract.
+
+== Installation
+
+The latest version of Syrup can be installed with Rubygems:
+
+  [sudo] gem install "syrup"
+
+In <b>Rails 3</b>, add this to your Gemfile and run the +bundle+ command.
+
+  gem "syrup"
+
+In <b>Rails 2</b>, add this to your environment.rb file.
+
+  config.gem "syrup"
+
+== Getting Started
+
+Spread it all over your pancakes and enjoy!
+
+== Usage
+
+  zions = Syrup.get_institution(:zions_bank)
+  zions.fetch_accounts.each do |act|
+    puts name + " " + name.current_balance
+  end

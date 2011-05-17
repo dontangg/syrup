@@ -1,0 +1,15 @@
+
+make sure that mechanize validates SSL certificates
+
+pass in username, password, secret questions
+
+zions.fetch_accounts
+should I store things?
+List accounts
+ * create an array of Account objects
+
+account.transactions OR account.fetch_transactions
+zions.
+When getting transactions
+ * create an array of Transaction objects
+ * populate as many variables on Account as you can (eg. current_balance, etc.)
