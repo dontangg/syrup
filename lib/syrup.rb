@@ -11,13 +11,11 @@ Dir[File.dirname(__FILE__) + '/syrup/institutions/*.rb'].each {|file| require fi
 module Syrup
   extend self
   
-  def list_institutions
-    Institutions::AbstractInstitution.subclasses.map do |subclass|
-      subclass.institution_name
-    end
+  def institutions
+    Institutions::AbstractInstitution.subclasses
   end
   
-  def get_institution(institution_sym)
+  def setup_institution(institution_sym)
     class_name = institution_sym.to_s.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }
     Institutions.const_get(class_name).new
   end

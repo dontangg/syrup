@@ -1,8 +1,12 @@
 module Syrup
   module Institutions
     class ZionsBank < AbstractInstitution
-      def self.institution_name
+      def self.name
         "Zions Bank"
+      end
+      
+      def self.id
+        "zions_bank"
       end
       
       attr_accessor :username, :password, :secret_qas
