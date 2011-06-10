@@ -1,8 +1,9 @@
 require "spec_helper"
 
 describe Syrup::Transaction do
+
   before(:all) do
-    @transaction = Syrup::Transaction.new :amount => 10, :payee => "Newegg", :posted_at => DateTime.now
+    @transaction = Transaction.new :amount => 10, :payee => "Newegg", :posted_at => DateTime.now
   end
   
   it "has an amount" do

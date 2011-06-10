@@ -1,5 +1,7 @@
 module Syrup
   class Account
-    attr_accessor :name, :id, :account_number, :current_balance, :available_balance, :type
+    # known types are :deposit and :credit
+    attr_accessor :id, :name, :type, :account_number, :current_balance, :available_balance, :prior_day_balance
+    
   end
 end

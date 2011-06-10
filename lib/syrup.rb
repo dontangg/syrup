@@ -1,22 +1,25 @@
 require 'date'
 require 'mechanize'
 require 'active_support/json'
-require 'syrup/account'
-require 'syrup/transaction'
+require_relative 'syrup/account'
+require_relative 'syrup/transaction'
 
 # require all institutions
-require 'syrup/institutions/abstract_institution'
+require_relative 'syrup/institutions/base'
 Dir[File.dirname(__FILE__) + '/syrup/institutions/*.rb'].each {|file| require file }
 
 module Syrup
   extend self
   
   def institutions
-    Institutions::AbstractInstitution.subclasses
+    Institutions::Base.subclasses
   end
   
-  def setup_institution(institution_sym)
-    class_name = institution_sym.to_s.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }
-    Institutions.const_get(class_name).new
+  def setup_institution(institution_id, username, password, secret_questions)
+    institution = institutions.find { |i| i.id == institution_id }
+    
+    if institution
+      institution.new(username, password, secret_questions)
+    end
   end
 end

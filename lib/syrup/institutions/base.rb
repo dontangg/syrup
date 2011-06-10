@@ -1,6 +1,6 @@
 module Syrup
   module Institutions
-    class AbstractInstitution
+    class Base
       
       def self.inherited(subclass)
         @subclasses ||= []
@@ -9,6 +9,13 @@ module Syrup
       
       def self.subclasses
         @subclasses
+      end
+      
+      attr_reader :username, :password, :secret_questions
+      
+      def initialize(username, password, secret_questions)
+        @username, @password = username, password
+        @secret_questions = secret_questions
       end
       
       protected
