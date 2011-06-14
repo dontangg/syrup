@@ -8,12 +8,12 @@ describe Syrup::Institutions::ZionsBank do
     
     zions = Institutions::ZionsBank.new(username, password, secret_questions)
     
-    zions.username.should == username
-    zions.password.should == password
-    zions.secret_questions.should == secret_questions
+    zions.username.should be(username)
+    zions.password.should be(password)
+    zions.secret_questions.should be(secret_questions)
   end
   
+  it "lists one account"
   it "lists all accounts"
-  it "gets transactions without getting a list of accounts"
   it "lists transactions given a date range"
 end

@@ -4,7 +4,7 @@ describe Syrup do
   it "lists all institutions" do
     institution_list = Syrup.institutions
     
-    institution_list.size.should == 1
+    institution_list.size.should be(1)
     
     institution_list.should include(Institutions::ZionsBank)
     
@@ -26,7 +26,7 @@ describe Syrup do
     zions = Syrup.setup_institution('zions_bank', username, password, secret_questions)
     
     zions.should_not be_nil
-    zions.class.should == Syrup::Institutions::ZionsBank
-    zions.username.should == username
+    zions.class.should be(Syrup::Institutions::ZionsBank)
+    zions.username.should be(username)
   end
 end

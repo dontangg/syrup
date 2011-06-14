@@ -1,11 +1,12 @@
 require 'date'
 require 'mechanize'
 require 'active_support/json'
-require_relative 'syrup/account'
-require_relative 'syrup/transaction'
+require 'syrup/account'
+require 'syrup/account_collection'
+require 'syrup/transaction'
 
 # require all institutions
-require_relative 'syrup/institutions/base'
+require 'syrup/institutions/base'
 Dir[File.dirname(__FILE__) + '/syrup/institutions/*.rb'].each {|file| require file }
 
 module Syrup
