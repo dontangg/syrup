@@ -16,6 +16,11 @@ module Syrup
       def initialize(username, password, secret_questions)
         @username, @password = username, password
         @secret_questions = secret_questions
+        @accounts = AccountCollection.new(self)
+      end
+      
+      def accounts
+        @accounts
       end
       
       protected
