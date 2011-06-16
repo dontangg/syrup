@@ -9,5 +9,9 @@ module Syrup
       end
     end
     
+    def ==(other)
+      other.id == id if other.is_a?(Account)
+    end
+    
   end
 end
