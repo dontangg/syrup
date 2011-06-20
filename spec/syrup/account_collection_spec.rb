@@ -46,11 +46,12 @@ describe AccountCollection do
     end
     
     it "returns a previously created account if one exists" do
-      account = @account_collection.find_by_id 3
-      account.name = "test account"
+      original_account = @account_collection.find_by_id 3
+      different_account = Account.new(:id => 3)
       
-      account = @account_collection.find_by_id 3
-      account.name.should == "test account"
+      new_account = @account_collection.find_by_id 3
+      new_account.should be(original_account)
+      new_account.should_not be(different_account)
     end
   end
   

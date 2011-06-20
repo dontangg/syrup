@@ -1,8 +1,9 @@
 module Syrup
   class Account
     # known types are :deposit and :credit
-    attr_accessor :id
-    attr_writer :name, :type, :account_number, :current_balance, :available_balance, :prior_day_balance
+    #attr_accessor :id
+    #attr_writer :name, :type, :account_number, :current_balance, :available_balance, :prior_day_balance
+    attr_reader :id
     
     def name
       populate
@@ -52,10 +53,21 @@ module Syrup
       
     end
     
+    def merge!(account_with_info)
+      if account_with_info
+        account_with_info.instance_variables.each do |filled_var|
+          self.instance_variable_set(filled_var, account_with_info.instance_variable_get(filled_var))
+        end
+      end
+    end
+    
     private
     
     def populate
-      
+      unless @populated || @institution.nil?
+        
+        @populated = true
+      end
     end
     
   end

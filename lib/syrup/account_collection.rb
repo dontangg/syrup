@@ -23,14 +23,12 @@ module Syrup
           
           # If we already had an account with this id, fill it with data
           if account
-            filled_account.instance_variables.each do |filled_var|
-              account.instance_variable_set(filled_var, filled_account.instance_variable_get(filled_var))
-            end
+            account.merge! filled_account
           else
             new_accounts << filled_account
           end
         end
-        @accounts |= new_accounts
+        @accounts |= new_accounts # Uses set union
         
         @fetched_all_accounts = true
       end
