@@ -44,9 +44,23 @@ module Syrup
       
       @cached_transactions = []
     end
+      
+    def populated?
+      @populated
+    end
     
-    def ==(other)
-      other.id == id if other.is_a?(Account)
+    def populated=(value)
+      @populated = value
+    end
+    
+    def populate
+      unless populated? || @institution.nil?
+        @institution.populate_account(id)
+      end
+    end
+    
+    def ==(other_account)
+      other_account.id == id && other_account.is_a?(Account)
     end
     
     def find_transactions()
@@ -59,15 +73,12 @@ module Syrup
           self.instance_variable_set(filled_var, account_with_info.instance_variable_get(filled_var))
         end
       end
+      self
     end
     
-    private
-    
-    def populate
-      unless @populated || @institution.nil?
-        @institution.fetch_account(self)
-        @populated = true
-      end
+    def is_valid?
+      populate
+      populated?
     end
     
   end

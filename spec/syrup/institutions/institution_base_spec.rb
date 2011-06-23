@@ -66,7 +66,7 @@ describe InstitutionBase do
   end
   
   
-  context "while populating" do
+  context "while populating accounts" do
     it "filters out non-existent accounts" do
       @institution.find_account_by_id 21
       @institution.accounts.each do |a|
@@ -76,8 +76,41 @@ describe InstitutionBase do
 
     it "populates data in existent accounts" do
       account = @institution.find_account_by_id 1
-      @institution.accounts
+      @institution.populate_accounts
       account.name.should == 'first'
     end
+    
+    it "marks accounts as populated" do
+      @institution.accounts.each do |account|
+        account.populated?.should be_true
+      end
+    end
+    
+    it "marks invalid accounts as invalid"
   end
+  
+  context "when asked to populate one account" do
+    it "populates one account" do
+      @institution.stub(:fetch_account) do
+        Account.new :id => 2, :name => 'single account'
+      end
+      
+      account = @institution.populate_account(2)
+      account.name.should == 'single account'
+      account.populated?.should be_true
+    end
+    
+    it "can populate all accounts" do
+      @institution.stub(:fetch_account) do
+        [Account.new(:id => 2, :name => 'single account')]
+      end
+      
+      invalid_account = @institution.find_account_by_id 21
+      @institution.populate_account(2)
+      @institution.populated?.should be_true
+    end
+  end
+  
+  it "populates transactions"
+  
 end
