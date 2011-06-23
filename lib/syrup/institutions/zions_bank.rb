@@ -1,6 +1,6 @@
 module Syrup
   module Institutions
-    class ZionsBank < Base
+    class ZionsBank < InstitutionBase
       
       class << self
         def name

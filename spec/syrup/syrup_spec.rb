@@ -15,7 +15,7 @@ describe Syrup do
   end
   
   it "returns nil if you try to setup an unknown institution" do
-    Syrup.setup_institution('unknown', 'user', 'pass', {}).should be_nil
+    Syrup.setup_institution('unknown').should be_nil
   end
   
   it "sets up a Zions Bank institution" do
@@ -23,7 +23,11 @@ describe Syrup do
     password = "pass"
     secret_questions = { 'Do you eat?' => 'yes' }
     
-    zions = Syrup.setup_institution('zions_bank', username, password, secret_questions)
+    zions = Syrup.setup_institution('zions_bank') do |config|
+      config.username = username
+      config.password = password
+      config.secret_questions = secret_questions
+    end
     
     zions.should_not be_nil
     zions.class.should be(Syrup::Institutions::ZionsBank)

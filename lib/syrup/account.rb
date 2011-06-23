@@ -65,7 +65,7 @@ module Syrup
     
     def populate
       unless @populated || @institution.nil?
-        
+        @institution.fetch_account(self)
         @populated = true
       end
     end
