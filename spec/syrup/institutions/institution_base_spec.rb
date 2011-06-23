@@ -86,7 +86,11 @@ describe InstitutionBase do
       end
     end
     
-    it "marks invalid accounts as invalid"
+    it "marks invalid accounts as invalid" do
+      account = @institution.find_account_by_id 21
+      @institution.populate_accounts
+      account.valid?.should be_false
+    end
   end
   
   context "when asked to populate one account" do

@@ -60,7 +60,7 @@ module Syrup
     end
     
     def ==(other_account)
-      other_account.id == id && other_account.is_a?(Account)
+      other_account.id == self.id && other_account.is_a?(Account)
     end
     
     def find_transactions()
@@ -76,9 +76,16 @@ module Syrup
       self
     end
     
-    def is_valid?
-      populate
-      populated?
+    def valid?
+      if @valid.nil?
+        populate
+        @valid = populated?
+      end
+      @valid
+    end
+    
+    def valid=(validity)
+      @valid = validity
     end
     
   end

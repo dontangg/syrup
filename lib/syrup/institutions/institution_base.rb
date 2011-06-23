@@ -67,8 +67,14 @@ module Syrup
           all_accounts = populated_accounts || fetch_accounts
           
           # Remove any accounts that were added, that don't actually exist
-          # TODO: maybe use reject so that you can mark all the invalid accounts
-          @accounts.keep_if { |a| all_accounts.include?(a) }
+          @accounts.keep_if do |a|
+            if all_accounts.include?(a)
+              true
+            else
+              a.valid = false
+              false
+            end
+          end
           
           # Add any additional account information
           new_accounts = []
