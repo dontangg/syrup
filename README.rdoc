@@ -22,7 +22,8 @@ Spread it all over your pancakes and enjoy!
 
 == Usage
 
-  zions = Syrup.get_institution(:zions_bank)
-  zions.fetch_accounts.each do |act|
-    puts name + " " + name.current_balance
+  Syrup.setup_institution('zions_bank') do |config|
+    config.username = 'user'
+    config.password = 'pass'
+    config.secret_questions = {'What is your secret question?' => "I don't know"}
   end
