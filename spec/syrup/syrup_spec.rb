@@ -11,6 +11,11 @@ describe Syrup do
     institution_list.each do |institution|
       institution.should respond_to(:name)
       institution.should respond_to(:id)
+      
+      inst = institution.new
+      inst.should respond_to(:fetch_account)
+      inst.should respond_to(:fetch_accounts)
+      inst.should respond_to(:fetch_transactions)
     end
   end
   

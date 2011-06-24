@@ -3,7 +3,8 @@ require 'date'
 module Syrup
   class Account
     # known types are :deposit and :credit
-    attr_reader :id
+    attr_accessor :id
+    attr_writer :name, :type, :account_number, :current_balance, :available_balance, :prior_day_balance
     
     def name
       populate
@@ -55,6 +56,7 @@ module Syrup
     
     def populate
       unless populated? || @institution.nil?
+        raise "The account id must not be nil when populating an account" if id.nil?
         @institution.populate_account(id)
       end
     end

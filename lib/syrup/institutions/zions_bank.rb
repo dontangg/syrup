@@ -12,6 +12,10 @@ module Syrup
         end
       end
       
+      def fetch_account(account_id)
+        fetch_accounts
+      end
+      
       def fetch_accounts
         ensure_authenticated
 
@@ -21,9 +25,8 @@ module Syrup
 
         accounts = []
         json['accountBalance']['depositAccountList'].each do |account|
-          new_account = Account.new
+          new_account = Account.new(:id => account['accountId'])
           new_account.name = account['name']
-          new_account.id = account['accountId']
           new_account.account_number = account['number']
           new_account.current_balance = parse_currency(account['currentAmt'])
           new_account.available_balance = parse_currency(account['availableAmt'])
@@ -32,9 +35,8 @@ module Syrup
           accounts << new_account
         end
         json['accountBalance']['creditAccountList'].each do |account|
-          new_account = Account.new
+          new_account = Account.new(:id => account['accountId'])
           new_account.name = account['name']
-          new_account.id = account['accountId']
           new_account.account_number = account['number']
           new_account.current_balance = parse_currency(account['balanceDueAmt'])
           new_account.type = :credit
@@ -82,11 +84,11 @@ module Syrup
           question = page.search('div.form_field')[2].css('div').inner_text
           
           # If the answer to this question was not supplied, raise an exception
-          raise question unless secret_qas[question]
+          raise question unless secret_questions[question]
           
           # Enter the answer to the secret question
           form = page.forms.first
-          form["challengeEntry.answerText"] = secret_qas[question]
+          form["challengeEntry.answerText"] = secret_questions[question]
           form.radiobutton_with(:value => 'false').check
           submit_button = form.button_with(:name => '_eventId_submit')
           page = form.submit(submit_button)
@@ -106,6 +108,7 @@ module Syrup
           # Clicking this link logs us into the banking.zionsbank.com domain
           page = page.links.first.click
           
+          raise "Unknown URL reached. Try logging in manually through a browser." if page.uri.to_s != "https://banking.zionsbank.com/ibuir/displayUserInterface.htm"
         end
         
         true
