@@ -19,5 +19,8 @@ describe ZionsBank, :bank_integration => true do
       puts "#{account.id} #{account.name}"
     end
   end
-  it "fetches transactions given a date range"
+  
+  it "fetches transactions given a date range" do
+    @bank.fetch_transactions
+  end
 end

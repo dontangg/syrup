@@ -50,9 +50,38 @@ module Syrup
       def fetch_transactions
         ensure_authenticated
         
+        page = agent.get('https://banking.zionsbank.com/zfnb/userServlet/app/bank/user/register_view_main?actAcct=498282&sortBy=Default&sortOrder=Default')
+        
+        page.search('tr').each do |row_element|
+          data = []
+          datapart = row_element.css('.data')
+          data += datapart if datapart
+          datapart = row_element.css('.datagrey')
+          data += datapart if datapart
+          
+          datapart = row_element.css('.curr')
+          data += datapart if datapart
+          datapart = row_element.css('.currgrey')
+          data += datapart if datapart
+          
+          data.each do |cell|
+            puts cell.inner_html.strip.gsub(/[^ -~]/, '')
+          end
+        end
+        
         # https://banking.zionsbank.com/zfnb/userServlet/app/bank/user/register_view_main?actAcct=498282&sortBy=Default&sortOrder=Default
+        # actAcct is the accountId (498282)
+        # dayRange.startDate, dayRange.endDate
+        # dayRange.searchType (dates or days, dates uses dayRange.startDate and dayRange.endDate, days uses dayRange.numberOfDays)
 
         # The transactions table is messy. Cells we want either have data, curr, datagrey, or currgrey css class
+        # 1. The date (initiated or cleared? they're generally the same)
+        # 2. The type of transaction (Debit, Transfer Debit, ATM Debit, Deposit 3785596). This may be irrelevant because of the position of the transaction amount.)
+        # 3. The payee
+        # 4. The transaction status (Posted or ... Pending?)
+        # 5. The debit amount
+        # 6. The deposit amount
+        # 7. The then-current account balance
       end
       
       private
