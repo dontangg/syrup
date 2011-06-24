@@ -1,6 +1,6 @@
 module Syrup
   class Transaction
-    attr_accessor :payee, :amount, :posted_at
+    attr_accessor :id, :payee, :amount, :posted_at
     
     def initialize(attr_hash = nil)
       if attr_hash

@@ -1,8 +1,8 @@
+require 'date'
+
 module Syrup
   class Account
     # known types are :deposit and :credit
-    #attr_accessor :id
-    #attr_writer :name, :type, :account_number, :current_balance, :available_balance, :prior_day_balance
     attr_reader :id
     
     def name
@@ -63,8 +63,10 @@ module Syrup
       other_account.id == self.id && other_account.is_a?(Account)
     end
     
-    def find_transactions()
+    def find_transactions(starting_at, ending_at = Date.today)
+      return [] if starting_at > ending_at
       
+      @institution.fetch_transactions(self.id, starting_at, ending_at)
     end
     
     def merge!(account_with_info)

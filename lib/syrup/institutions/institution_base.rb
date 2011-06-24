@@ -96,9 +96,6 @@ module Syrup
         end
       end
       
-      def populate_transactions
-      end
-      
       protected
       
       def agent
