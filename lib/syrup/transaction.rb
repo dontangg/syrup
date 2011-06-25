@@ -1,6 +1,7 @@
 module Syrup
   class Transaction
-    attr_accessor :id, :payee, :amount, :posted_at
+    # known statuses are :posted and :pending
+    attr_accessor :id, :payee, :amount, :posted_at, :status
     
     def initialize(attr_hash = nil)
       if attr_hash

@@ -1,3 +1,5 @@
+require 'date'
+
 module Syrup
   module Institutions
     class ZionsBank < InstitutionBase
@@ -50,22 +52,42 @@ module Syrup
       def fetch_transactions
         ensure_authenticated
         
+        transactions = []
+        
         page = agent.get('https://banking.zionsbank.com/zfnb/userServlet/app/bank/user/register_view_main?actAcct=498282&sortBy=Default&sortOrder=Default')
         
         page.search('tr').each do |row_element|
           data = []
           datapart = row_element.css('.data')
-          data += datapart if datapart
+          if datapart
+            data += datapart
+            datapart = row_element.css('.curr')
+            data += datapart if datapart
+          end
+          
           datapart = row_element.css('.datagrey')
-          data += datapart if datapart
+          if datapart
+            data += datapart
+            datapart = row_element.css('.currgrey')
+            data += datapart if datapart
+          end
           
-          datapart = row_element.css('.curr')
-          data += datapart if datapart
-          datapart = row_element.css('.currgrey')
-          data += datapart if datapart
-          
-          data.each do |cell|
-            puts cell.inner_html.strip.gsub(/[^ -~]/, '')
+          if data.size == 7
+            data.map! {|cell| cell.inner_html.strip.gsub(/[^ -~]/, '') }
+            
+            transaction = Transaction.new
+
+            transaction.posted_at = Date.strptime(data[0], '%m/%d/%Y')
+            transaction.payee = data[2]
+            transaction.status = data[3].include?("Posted") ? :posted : :pending
+            unless data[4].empty?
+              transaction.amount = -parse_currency(data[4])
+            end
+            unless data[5].empty?
+              transaction.amount = parse_currency(data[5])
+            end
+            
+            transactions << transaction
           end
         end
         
@@ -82,6 +104,8 @@ module Syrup
         # 5. The debit amount
         # 6. The deposit amount
         # 7. The then-current account balance
+        
+        transactions
       end
       
       private
