@@ -55,11 +55,8 @@ module Syrup
         transactions = []
         
         post_vars = { "actAcct" => account_id, "dayRange.searchType" => "dates", "dayRange.startDate" => starting_at.strftime('%m/%d/%Y'), "dayRange.endDate" => ending_at.strftime('%m/%d/%Y'), "submit_view.x" => 11, "submit_view.y" => 11, "submit_view" => "view" }
-        puts post_vars
         
         page = agent.post("https://banking.zionsbank.com/zfnb/userServlet/app/bank/user/register_view_main?reSort=false&actAcct=#{account_id}", post_vars)
-        
-        require 'yaml'
         
         page.search('tr').each do |row_element|
           data = []
@@ -93,7 +90,6 @@ module Syrup
             end
             
             transactions << transaction
-            y transaction
           end
         end
         
