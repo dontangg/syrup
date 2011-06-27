@@ -1,6 +1,25 @@
 = Syrup
 
-Syrup is made from a yummy maple extract.
+Syrup helps you to extract bank account information and transactions.
+
+== Usage
+
+  # Setup an instance of the bank
+  zions_bank = Syrup.setup_institution('zions_bank') do |config|
+    config.username = 'user'
+    config.password = 'pass'
+    config.secret_questions = {'What is your secret question?' => "I don't know"}
+  end
+  
+  # List accounts
+  zions_bank.accounts.each do |account|
+    puts "#{account.name} (#{account.current_balance}) # => "Checking (100.0)"
+  end
+  
+  # Get transactions
+  account = zions_bank.find_account_by_id 123456
+  transactions = account.find_transactions(Date.today - 30) # => an array of Transactions from the last 30 days
+  transactions = account.find_transactions(Date.parse('2011-01-01'), Date.parse('2011-02-01') - 1) # => an array of Transactions from the month of January
 
 == Installation
 
@@ -16,14 +35,12 @@ In <b>Rails 2</b>, add this to your environment.rb file.
 
   config.gem "syrup"
 
-== Getting Started
+== Supported Institutions
 
-Spread it all over your pancakes and enjoy!
+Currently, only Zions Bank[http://zionsbank.com] is supported. I will be
+implementing UCCU, USAA, and Wells Fargo (probably in that order). If you would
+like support for a different bank, you have two options:
 
-== Usage
-
-  Syrup.setup_institution('zions_bank') do |config|
-    config.username = 'user'
-    config.password = 'pass'
-    config.secret_questions = {'What is your secret question?' => "I don't know"}
-  end
+1. Get me the credentials to log into an account with that bank (you'd have to
+   trust me).
+2. Implement it yourself and submit a pull request.

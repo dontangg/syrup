@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Don Wilson"]
   s.email       = ["dontangg@gmail.com"]
   s.homepage    = "http://github.com/dontangg/syrup"
-  s.summary     = %q{Simple account balance/transactions extractor.}
-  s.description = %q{Simple account balance/transactions extractor by scraping bank websites.}
+  s.summary     = %q{Simple account balance and transactions extractor.}
+  s.description = %q{Simple account balance and transactions extractor by scraping bank websites.}
   
   s.add_dependency "mechanize"
   s.add_dependency "activesupport"
