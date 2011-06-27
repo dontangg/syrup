@@ -1,6 +1,7 @@
 require 'date'
 require 'mechanize'
 require 'active_support/json'
+require 'syrup/information_missing_error'
 require 'syrup/account'
 require 'syrup/transaction'
 

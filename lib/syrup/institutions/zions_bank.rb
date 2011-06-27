@@ -118,8 +118,8 @@ module Syrup
         page = agent.get('https://banking.zionsbank.com/ibuir')
         if page.body.include?("SessionTimeOutException")
           
-          raise ArgumentError, "Username must be supplied before authenticating" unless self.username
-          raise ArgumentError, "Password must be supplied before authenticating" unless self.password
+          raise InformationMissingError, "Please supply a username" unless self.username
+          raise InformationMissingError, "Please supply a password" unless self.password
           
           @agent = Mechanize.new
           
@@ -139,7 +139,7 @@ module Syrup
           question = page.search('div.form_field')[2].css('div').inner_text
           
           # If the answer to this question was not supplied, raise an exception
-          raise question unless secret_questions[question]
+          raise InformationMissingError, "Please answer the question, \"#{question}\"" unless secret_questions[question]
           
           # Enter the answer to the secret question
           form = page.forms.first
@@ -149,7 +149,7 @@ module Syrup
           page = form.submit(submit_button)
           
           # If the supplied answer is incorrect, raise an exception
-          raise "Invalid answer" unless page.search('#errorComponent').empty?
+          raise InformationMissingError, "\"#{secret_questions[question]}\" is not the correct answer to, \"#{question}\"" unless page.search('#errorComponent').empty?
 
           # Enter the password
           form = page.forms.first
@@ -158,7 +158,7 @@ module Syrup
           page = form.submit(submit_button)
           
           # If the supplied password is incorrect, raise an exception
-          raise "Invalid password" unless page.search('#errorComponent').empty?
+          raise InformationMissingError, "An invalid password was supplied" unless page.search('#errorComponent').empty?
 
           # Clicking this link logs us into the banking.zionsbank.com domain
           page = page.links.first.click
