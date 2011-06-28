@@ -43,4 +43,4 @@ like support for a different bank, you have two options:
 
 1. Get me the credentials to log into an account with that bank (you'd have to
    trust me).
-2. Implement it yourself and submit a pull request.
+2. Implement it yourself and submit a pull request. See "Adding Support For Another Institution"[https://github.com/dontangg/syrup/wiki/Adding-Support-For-Another-Institution]
