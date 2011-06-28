@@ -1,5 +1,12 @@
 
-make sure that mechanize validates SSL certificates
+Make sure that mechanize validates SSL certificates
 
 When getting transactions
 * populate as many variables on Account as you can (eg. current_balance, etc.)
+
+Tests
+* Add generic tests to test institution implementations
+* Add tests to test Zions Bank without storing username, password, etc.
+
+Documentation
+* Improve GitHub wiki documentation
