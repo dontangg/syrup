@@ -23,7 +23,7 @@ module Syrup
 
         # List accounts
         page = agent.get('https://banking.zionsbank.com/ibuir/displayAccountBalance.htm')
-        json = ActiveSupport::JSON.decode(page.body)
+        json = MultiJson.decode(page.body)
 
         accounts = []
         json['accountBalance']['depositAccountList'].each do |account|
@@ -58,7 +58,23 @@ module Syrup
         
         page = agent.post("https://banking.zionsbank.com/zfnb/userServlet/app/bank/user/register_view_main?reSort=false&actAcct=#{account_id}", post_vars)
         
+        # Get all the transactions
         page.search('tr').each do |row_element|
+          # Look for the account information first
+          account = find_account_by_id(account_id)
+          datapart = row_element.css('.acct')
+          if datapart
+            /Prior Day Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
+              account.prior_day_balance = parse_currency(match[1])
+            end
+            /Current Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
+              account.current_balance = parse_currency(match[1])
+            end
+            /Available Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
+              account.available_balance = parse_currency(match[1])
+            end
+          end
+        
           data = []
           datapart = row_element.css('.data')
           if datapart

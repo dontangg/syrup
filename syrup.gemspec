@@ -12,10 +12,10 @@ Gem::Specification.new do |s|
   s.summary     = %q{Simple account balance and transactions extractor.}
   s.description = %q{Simple account balance and transactions extractor by scraping bank websites.}
   
-  s.add_dependency "mechanize"
-  s.add_dependency "activesupport"
+  s.add_dependency "mechanize", ">= 1.0.0"
+  s.add_dependency "multi_json", ">= 1.0.3"
   
-  s.add_development_dependency "rspec"
+  s.add_development_dependency "rspec", ">= 2.6.0"
 
   s.rubyforge_project = s.name
 
