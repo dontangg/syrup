@@ -97,7 +97,6 @@ module Syrup
     
     # Populates this account with all of its information
     def populate
-      puts "populate called"
       unless populated? || @institution.nil?
         raise "The account id must not be nil when populating an account" if id.nil?
         @institution.populate_account(id)
