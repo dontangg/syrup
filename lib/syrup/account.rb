@@ -46,32 +46,32 @@ module Syrup
     
     
     def name
-      populate
+      populate unless @name
       @name
     end
     
     def type
-      populate
+      populate unless @type
       @type
     end
     
     def account_number
-      populate
+      populate unless @account_number
       @account_number
     end
     
     def current_balance
-      populate
+      populate unless @current_balance
       @current_balance
     end
     
     def available_balance
-      populate
+      populate unless @available_balance
       @available_balance
     end
     
     def prior_day_balance
-      populate
+      populate unless @prior_day_balance
       @prior_day_balance
     end
     
@@ -97,6 +97,7 @@ module Syrup
     
     # Populates this account with all of its information
     def populate
+      puts "populate called"
       unless populated? || @institution.nil?
         raise "The account id must not be nil when populating an account" if id.nil?
         @institution.populate_account(id)
