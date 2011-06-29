@@ -1,3 +1,9 @@
-0.0.1 (Date)
+0.0.3 (Jun 29, 2011)
+
+* removed activesupport dependency in favor of multi_json
+* ZionsBank now populates balance information while fetching transactions
+* Account only tries to populate itself if the data being requested isn't there
+
+0.0.1
 
 * initial release
