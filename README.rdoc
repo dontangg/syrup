@@ -37,7 +37,7 @@ In <b>Rails 2</b>, add this to your environment.rb file.
 
 == Supported Institutions
 
-Currently, only "Zions Bank"[http://zionsbank.com] is supported. I will be
+Currently, only {Zions Bank}[http://zionsbank.com] is supported. I will be
 implementing UCCU, USAA, and Wells Fargo (probably in that order). If you would
 like support for a different bank, you have two options:
 
