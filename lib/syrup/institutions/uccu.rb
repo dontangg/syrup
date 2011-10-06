@@ -33,7 +33,10 @@ module Syrup
         ensure_authenticated
 
         # List accounts
-        page = agent.post('https://pb.uccu.com/UCCU/Ajax/RpcHandler.ashx', '{"id":0,"method":"accounts.getBalances","params":[false]}', 'X-JSON-RPC' => 'accounts.getBalances')
+        page = agent.post('https://pb.uccu.com/UCCU/Ajax/RpcHandler.ashx',
+                          '{"id":0,"method":"accounts.getBalances","params":[false]}',
+                          'X-JSON-RPC' => 'accounts.getBalances')
+        
         json = MultiJson.decode(page.body)
 
         accounts = []
@@ -41,8 +44,8 @@ module Syrup
           next if account['accountIndex'] == -1
           
           new_account = Account.new(:id => account['accountIndex'])
-          new_account.name = account['displayName']
-          new_account.account_number = /\(([*0-9-]+)\)/.match(account['displayName'])[1]
+          new_account.name = account['displayName'][/^[^(]*/, 0].strip
+          new_account.account_number = account['displayName'][/\(([*0-9-]+)\)/, 1]
           new_account.current_balance = account['current'].to_f
           new_account.available_balance = account['available'].to_f
           # new_account.type = :deposit # :credit
@@ -58,9 +61,9 @@ module Syrup
         
         transactions = []
         
-        post_vars = { "actAcct" => account_id, "dayRange.searchType" => "dates", "dayRange.startDate" => starting_at.strftime('%m/%d/%Y'), "dayRange.endDate" => ending_at.strftime('%m/%d/%Y'), "submit_view.x" => 11, "submit_view.y" => 11, "submit_view" => "view" }
+        post_vars = { "ddlAccounts" => account_id, "ddlType" => "0", "txtFromDate:textBox" => starting_at.strftime('%m/%d/%Y'), "txtToDate:textBox" => ending_at.strftime('%m/%d/%Y'), "btnSubmitHistoryRequest" => "Display" }
         
-        page = agent.post("https://banking.zionsbank.com/zfnb/userServlet/app/bank/user/register_view_main?reSort=false&actAcct=#{account_id}", post_vars)
+        page = agent.post("https://pb.uccu.com/UCCU/Accounts/Activity.aspx?index=#{account_id}", post_vars)
         
         # Get all the transactions
         page.search('tr').each do |row_element|
