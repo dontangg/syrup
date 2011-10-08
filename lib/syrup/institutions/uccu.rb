@@ -61,59 +61,47 @@ module Syrup
         
         transactions = []
         
-        post_vars = { "ddlAccounts" => account_id, "ddlType" => "0", "txtFromDate:textBox" => starting_at.strftime('%m/%d/%Y'), "txtToDate:textBox" => ending_at.strftime('%m/%d/%Y'), "btnSubmitHistoryRequest" => "Display" }
+        page = agent.get("https://pb.uccu.com/UCCU/Accounts/Activity.aspx?index=#{account_id}")
+        form = page.form("MAINFORM")
+        form.ddlAccounts = account_id
+        form.ddlType = 0 # 0 = All types of transactions
+        form.field_with(:id => 'txtFromDate_textBox').value = starting_at.month.to_s + starting_at.strftime('/%e/%Y')
+        form.field_with(:id => 'txtToDate_textBox').value = ending_at.month.to_s + ending_at.strftime('/%e/%Y')
+        submit_button = form.button_with(:name => 'btnSubmitHistoryRequest')
+        page = form.submit(submit_button)
         
-        page = agent.post("https://pb.uccu.com/UCCU/Accounts/Activity.aspx?index=#{account_id}", post_vars)
+        # Look for the account balance
+        account = find_account_by_id(account_id)
+        page.search('.summaryTable tr').each do |row_element|
+          first_cell_text = ''
+          row_element.children.each do |cell_element|
+            if first_cell_text.empty?
+              first_cell_text = cell_element.content.strip if cell_element.respond_to? :name
+            else
+              case first_cell_text
+              when "Available Balance:"
+                account.available_balance = parse_currency(cell_element.content.strip)
+              when "Current Balance:"
+                account.current_balance = parse_currency(cell_element.content.strip)
+              end
+            end
+          end
+        end
         
         # Get all the transactions
-        page.search('tr').each do |row_element|
-          # Look for the account information first
-          account = find_account_by_id(account_id)
-          datapart = row_element.css('.acct')
-          if datapart
-            /Prior Day Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
-              account.prior_day_balance = parse_currency(match[1])
-            end
-            /Current Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
-              account.current_balance = parse_currency(match[1])
-            end
-            /Available Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
-              account.available_balance = parse_currency(match[1])
-            end
-          end
-        
-          data = []
-          datapart = row_element.css('.data')
-          if datapart
-            data += datapart
-            datapart = row_element.css('.curr')
-            data += datapart if datapart
-          end
+        page.search('#ctlAccountActivityChecking tr').each do |row_element|
+          next if row_element['class'] == 'header'
           
-          datapart = row_element.css('.datagrey')
-          if datapart
-            data += datapart
-            datapart = row_element.css('.currgrey')
-            data += datapart if datapart
-          end
-          
-          if data.size == 7
-            data.map! {|cell| cell.inner_html.strip.gsub(/[^ -~]/, '') }
+          data = row_element.css('td').map {|element| element.content.strip }
             
-            transaction = Transaction.new
+          transaction = Transaction.new
+          transaction.posted_at = Date.strptime(data[0], '%m/%d/%Y')
+          transaction.payee = data[3]
+          transaction.status = :posted # :pending
+          transaction.amount = -parse_currency(data[4]) if data[4].size > 1
+          transaction.amount = parse_currency(data[5]) if data[5].size > 1
 
-            transaction.posted_at = Date.strptime(data[0], '%m/%d/%Y')
-            transaction.payee = data[2]
-            transaction.status = data[3].include?("Posted") ? :posted : :pending
-            unless data[4].empty?
-              transaction.amount = -parse_currency(data[4])
-            end
-            unless data[5].empty?
-              transaction.amount = parse_currency(data[5])
-            end
-            
-            transactions << transaction
-          end
+          transactions << transaction
         end
         
         transactions
