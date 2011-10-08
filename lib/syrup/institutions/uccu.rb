@@ -1,16 +1,5 @@
 require 'date'
 
-# Net::HTTP::Persistent::Error: too many connection resets (due to An established connection was aborted by the software i
-# n your host machine. - Errno::ECONNABORTED) after 2 requests on 24106116
-        #from C:/Ruby192/lib/ruby/gems/1.9.1/gems/net-http-persistent-1.8/lib/net/http/persistent.rb:446:in `rescue in re
-#quest'
-        #from C:/Ruby192/lib/ruby/gems/1.9.1/gems/net-http-persistent-1.8/lib/net/http/persistent.rb:422:in `request'
-        #from C:/Ruby192/lib/ruby/gems/1.9.1/gems/mechanize-2.0.1/lib/mechanize/http/agent.rb:204:in `fetch'
-        #from C:/Ruby192/lib/ruby/gems/1.9.1/gems/mechanize-2.0.1/lib/mechanize.rb:539:in `request_with_entity'
-        #from C:/Ruby192/lib/ruby/gems/1.9.1/gems/mechanize-2.0.1/lib/mechanize.rb:485:in `post'
-        #from (irb):16
-        #from C:/Ruby192/bin/irb:12:in `<main>'
-
 module Syrup
   module Institutions
     class Uccu < InstitutionBase
