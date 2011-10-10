@@ -5,3 +5,4 @@
 Gemfile.lock
 pkg/*
 doc/*
+.DS_Store

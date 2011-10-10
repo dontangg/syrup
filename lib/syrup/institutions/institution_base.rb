@@ -70,7 +70,7 @@ module Syrup
       def find_account_by_id(account_id)
         account = @accounts.find { |a| a.id == account_id }
         unless account || populated?
-          account = Account.new(:id => account_id)
+          account = Account.new(:id => account_id, :institution => self)
           @accounts << account
         end
         account

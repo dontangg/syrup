@@ -27,7 +27,7 @@ module Syrup
 
         accounts = []
         json['accountBalance']['depositAccountList'].each do |account|
-          new_account = Account.new(:id => account['accountId'])
+          new_account = Account.new(:id => account['accountId'], :institution => self)
           new_account.name = account['name']
           new_account.account_number = account['number']
           new_account.current_balance = parse_currency(account['currentAmt'])
@@ -37,7 +37,7 @@ module Syrup
           accounts << new_account
         end
         json['accountBalance']['creditAccountList'].each do |account|
-          new_account = Account.new(:id => account['accountId'])
+          new_account = Account.new(:id => account['accountId'], :institution => self)
           new_account.name = account['name']
           new_account.account_number = account['number']
           new_account.current_balance = parse_currency(account['balanceDueAmt'])
@@ -141,7 +141,7 @@ module Syrup
           question = page.search('div.form_field')[2].css('div').inner_text
           
           # If the answer to this question was not supplied, raise an exception
-          raise InformationMissingError, "Please answer the question, \"#{question}\"" unless secret_questions[question]
+          raise InformationMissingError, "Please answer the question, \"#{question}\"" unless secret_questions && secret_questions[question]
           
           # Enter the answer to the secret question
           form = page.forms.first
