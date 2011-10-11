@@ -85,7 +85,7 @@ module Syrup
             
           transaction = Transaction.new
           transaction.posted_at = Date.strptime(data[0], '%m/%d/%Y')
-          transaction.payee = data[3]
+          transaction.payee = decode_html_entities(data[3])
           transaction.status = :posted # :pending
           transaction.amount = -parse_currency(data[4]) if data[4].size > 1
           transaction.amount = parse_currency(data[5]) if data[5].size > 1
