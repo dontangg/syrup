@@ -28,7 +28,7 @@ module Syrup
         accounts = []
         json['accountBalance']['depositAccountList'].each do |account|
           new_account = Account.new(:id => account['accountId'], :institution => self)
-          new_account.name = account['name']
+          new_account.name = decode_html_entities(account['name'])
           new_account.account_number = account['number']
           new_account.current_balance = parse_currency(account['currentAmt'])
           new_account.available_balance = parse_currency(account['availableAmt'])
@@ -38,7 +38,7 @@ module Syrup
         end
         json['accountBalance']['creditAccountList'].each do |account|
           new_account = Account.new(:id => account['accountId'], :institution => self)
-          new_account.name = account['name']
+          new_account.name = decode_html_entities(account['name'])
           new_account.account_number = account['number']
           new_account.current_balance = parse_currency(account['balanceDueAmt'])
           new_account.type = :credit
@@ -96,7 +96,7 @@ module Syrup
             transaction = Transaction.new
 
             transaction.posted_at = Date.strptime(data[0], '%m/%d/%Y')
-            transaction.payee = data[2]
+            transaction.payee = decode_html_entities(data[2])
             transaction.status = data[3].include?("Posted") ? :posted : :pending
             unless data[4].empty?
               transaction.amount = -parse_currency(data[4])
