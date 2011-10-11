@@ -144,6 +144,13 @@ module Syrup
         currency.scan(/[0-9.]/).join.to_f
       end
       
+      # A helper method that replaces a few HTML entities with their actual characters
+      #
+      #   decode_html_entities("You &amp; I") #=> "You & I"
+      def decode_html_entities(str)
+        str.gsub(/&amp;/, '&').gsub(/&lt;/, '<').gsub(/&gt;/, '>')
+      end
+      
     end
   end
 end
