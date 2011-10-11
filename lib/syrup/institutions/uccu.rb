@@ -33,7 +33,7 @@ module Syrup
           next if account['accountIndex'] == -1
           
           new_account = Account.new(:id => account['accountIndex'], :institution => self)
-          new_account.name = account['displayName'][/^[^(]*/, 0].strip
+          new_account.name = decode_html_entities(account['displayName'][/^[^(]*/, 0].strip)
           new_account.account_number = account['displayName'][/\(([*0-9-]+)\)/, 1]
           new_account.current_balance = account['current'].to_f
           new_account.available_balance = account['available'].to_f
