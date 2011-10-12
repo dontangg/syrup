@@ -33,7 +33,7 @@ module Syrup
           next if account['accountIndex'] == -1
           
           new_account = Account.new(:id => account['accountIndex'], :institution => self)
-          new_account.name = decode_html_entities(account['displayName'][/^[^(]*/, 0].strip)
+          new_account.name = unescape_html(account['displayName'][/^[^(]*/, 0].strip)
           new_account.account_number = account['displayName'][/\(([*0-9-]+)\)/, 1]
           new_account.current_balance = account['current'].to_f
           new_account.available_balance = account['available'].to_f
@@ -85,7 +85,7 @@ module Syrup
             
           transaction = Transaction.new
           transaction.posted_at = Date.strptime(data[0], '%m/%d/%Y')
-          transaction.payee = decode_html_entities(data[3])
+          transaction.payee = unescape_html(data[3])
           transaction.status = :posted # :pending
           transaction.amount = -parse_currency(data[4]) if data[4].size > 1
           transaction.amount = parse_currency(data[5]) if data[5].size > 1
