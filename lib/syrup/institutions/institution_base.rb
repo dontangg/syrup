@@ -101,12 +101,12 @@ module Syrup
           all_accounts = populated_accounts || fetch_accounts
           
           # Remove any accounts that were added, that don't actually exist
-          @accounts.keep_if do |a|
+          @accounts.delete_if do |a|
             if all_accounts.include?(a)
-              true
+              false
             else
               a.valid = false
-              false
+              true
             end
           end
           
