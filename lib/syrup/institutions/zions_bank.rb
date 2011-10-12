@@ -28,7 +28,7 @@ module Syrup
         accounts = []
         json['accountBalance']['depositAccountList'].each do |account|
           new_account = Account.new(:id => account['accountId'], :institution => self)
-          new_account.name = decode_html_entities(account['name'])
+          new_account.name = unescape_html(account['name'])
           new_account.account_number = account['number']
           new_account.current_balance = parse_currency(account['currentAmt'])
           new_account.available_balance = parse_currency(account['availableAmt'])
