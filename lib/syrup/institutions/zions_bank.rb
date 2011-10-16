@@ -63,14 +63,14 @@ module Syrup
           # Look for the account information first
           account = find_account_by_id(account_id)
           datapart = row_element.css('.acct')
-          if datapart
-            /Prior Day Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
+          if datapart && datapart.inner_html.size > 0
+            if match = /Prior Day Balance:\s*([^<]+)/.match(datapart.inner_html)
               account.prior_day_balance = parse_currency(match[1])
             end
-            /Current Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
+            if match = /Current Balance:\s*([^<]+)/.match(datapart.inner_html)
               account.current_balance = parse_currency(match[1])
             end
-            /Available Balance:\s*([^<]+)/.match(datapart.inner_html) do |match|
+            if match = /Available Balance:\s*([^<]+)/.match(datapart.inner_html)
               account.available_balance = parse_currency(match[1])
             end
           end
