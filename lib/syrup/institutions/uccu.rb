@@ -54,8 +54,8 @@ module Syrup
         form = page.form("MAINFORM")
         form.ddlAccounts = account_id
         form.ddlType = 0 # 0 = All types of transactions
-        form.field_with(:id => 'txtFromDate_textBox').value = starting_at.month.to_s + starting_at.strftime('/%e/%Y')
-        form.field_with(:id => 'txtToDate_textBox').value = ending_at.month.to_s + ending_at.strftime('/%e/%Y')
+        form.field_with(:id => 'txtFromDate_textBox').value = starting_at.month.to_s + '/' + starting_at.strftime('%e/%Y').strip
+        form.field_with(:id => 'txtToDate_textBox').value = ending_at.month.to_s + '/' + ending_at.strftime('%e/%Y').strip
         submit_button = form.button_with(:name => 'btnSubmitHistoryRequest')
         page = form.submit(submit_button)
         
@@ -67,11 +67,12 @@ module Syrup
             if first_cell_text.empty?
               first_cell_text = cell_element.content.strip if cell_element.respond_to? :name
             else
+              content = cell_element.content.strip
               case first_cell_text
               when "Available Balance:"
-                account.available_balance = parse_currency(cell_element.content.strip)
+                account.available_balance = parse_currency(content) if content.match(/\d+/)
               when "Current Balance:"
-                account.current_balance = parse_currency(cell_element.content.strip)
+                account.current_balance = parse_currency(content) if content.match(/\d+/)
               end
             end
           end
