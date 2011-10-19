@@ -80,15 +80,15 @@ module Syrup
         # Get all the transactions
         page.search('#ctlAccountActivityChecking tr').each do |row_element|
           next if row_element['class'] == 'header'
-          
+
           data = row_element.css('td').map {|element| element.content.strip }
             
           transaction = Transaction.new
           transaction.posted_at = Date.strptime(data[0], '%m/%d/%Y')
           transaction.payee = unescape_html(data[3])
           transaction.status = :posted # :pending
-          transaction.amount = -parse_currency(data[4]) if data[4].size > 1
-          transaction.amount = parse_currency(data[5]) if data[5].size > 1
+          transaction.amount = -parse_currency(data[4]) if data[4].match(/\d+/)
+          transaction.amount = parse_currency(data[5]) if data[5].match(/\d+/)
 
           transactions << transaction
         end
