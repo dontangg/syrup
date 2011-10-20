@@ -165,7 +165,11 @@ module Syrup
           # Clicking this link logs us into the banking.zionsbank.com domain
           page = page.links.first.click
           
-          raise "Unknown URL reached. Try logging in manually through a browser." if page.uri.to_s != "https://banking.zionsbank.com/ibuir/displayUserInterface.htm"
+          if page.uri.to_s != "https://banking.zionsbank.com/ibuir/displayUserInterface.htm"
+            page = agent.get('https://banking.zionsbank.com/ibuir')
+            
+            raise "Unknown URL reached. Try logging in manually through a browser." if page.body.include?("SessionTimeOutException")
+          end
         end
         
         true
