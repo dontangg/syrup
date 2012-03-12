@@ -126,7 +126,7 @@ module Syrup
           @agent = Mechanize.new
           
           # Enter the username
-          page = agent.get('https://zionsbank.com')
+          page = agent.get('https://www.zionsbank.com')
           form = page.form('logonForm')
           form.publicCred1 = username
           page = form.submit
