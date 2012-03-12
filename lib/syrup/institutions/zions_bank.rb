@@ -117,13 +117,11 @@ module Syrup
       def ensure_authenticated
         
         # Check to see if already authenticated
-        page = agent.get('https://banking.zionsbank.com/ibuir')
+        page = agent.get('https://banking.zionsbank.com/ibuir/')
         if page.body.include?("SessionTimeOutException")
           
           raise InformationMissingError, "Please supply a username" unless self.username
           raise InformationMissingError, "Please supply a password" unless self.password
-          
-          @agent = Mechanize.new
           
           # Enter the username
           page = agent.get('https://www.zionsbank.com')
