@@ -133,7 +133,15 @@ module Syrup
       protected
       
       def agent
-        @agent ||= Mechanize.new
+        unless @agent
+          @agent = Mechanize.new
+
+          # Provide path to cert bundle for Windows
+          # Downloaded from http://curl.haxx.se/ca/
+          @agent.agent.http.ca_file = File.expand_path(File.dirname(__FILE__) + "/cacert.pem") if RUBY_PLATFORM =~ /mingw|mswin/i
+        end
+
+        @agent
       end
       
       # This is just a helper method that simplifies the common process of extracting a number
