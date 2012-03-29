@@ -13,7 +13,7 @@ Syrup helps you to extract bank account information and transactions.
   
   # List accounts
   zions_bank.accounts.each do |account|
-    puts "#{account.name} (#{account.current_balance}) # => "Checking (100.0)"
+    puts "#{account.name} (#{account.current_balance})" # => "Checking (100.0)"
   end
   
   # Get transactions
