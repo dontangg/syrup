@@ -1,4 +1,5 @@
 require 'date'
+require 'bigdecimal'
 
 module Syrup
   module Institutions
@@ -35,8 +36,8 @@ module Syrup
           new_account = Account.new(:id => account['accountIndex'], :institution => self)
           new_account.name = unescape_html(account['displayName'][/^[^(]*/, 0].strip)
           new_account.account_number = account['displayName'][/\(([*0-9-]+)\)/, 1]
-          new_account.current_balance = account['current'].to_f
-          new_account.available_balance = account['available'].to_f
+          new_account.current_balance = BigDecimal.new(account['current'])
+          new_account.available_balance = BigDecimal.new(account['available'])
           # new_account.type = :deposit # :credit
           
           accounts << new_account
