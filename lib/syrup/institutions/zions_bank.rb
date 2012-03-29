@@ -135,21 +135,24 @@ module Syrup
           # Go on to the next page
           page = page.links.first.click
 
-          # Find the secret question
-          question = page.search('div.form_field')[2].css('div').inner_text
-          
-          # If the answer to this question was not supplied, raise an exception
-          raise InformationMissingError, "Please answer the question, \"#{question}\"" unless secret_questions && secret_questions[question]
-          
-          # Enter the answer to the secret question
-          form = page.forms.first
-          form["challengeEntry.answerText"] = secret_questions[question]
-          form.radiobutton_with(:value => 'false').check
-          submit_button = form.button_with(:name => '_eventId_submit')
-          page = form.submit(submit_button)
-          
-          # If the supplied answer is incorrect, raise an exception
-          raise InformationMissingError, "\"#{secret_questions[question]}\" is not the correct answer to, \"#{question}\"" unless page.search('#errorComponent').empty?
+          # Skip the secret question if we are prompted for the password
+          unless page.body.include?("Site Validation and Password")
+            # Find the secret question
+            question = page.search('div.form_field')[2].css('div').inner_text
+            
+            # If the answer to this question was not supplied, raise an exception
+            raise InformationMissingError, "Please answer the question, \"#{question}\"" unless secret_questions && secret_questions[question]
+            
+            # Enter the answer to the secret question
+            form = page.forms.first
+            form["challengeEntry.answerText"] = secret_questions[question]
+            form.radiobutton_with(:value => 'false').check
+            submit_button = form.button_with(:name => '_eventId_submit')
+            page = form.submit(submit_button)
+            
+            # If the supplied answer is incorrect, raise an exception
+            raise InformationMissingError, "\"#{secret_questions[question]}\" is not the correct answer to, \"#{question}\"" unless page.search('#errorComponent').empty?
+          end
 
           # Enter the password
           form = page.forms.first
