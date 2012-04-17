@@ -27,7 +27,7 @@ module Syrup
                           '{"id":0,"method":"accounts.getBalances","params":[false]}',
                           'X-JSON-RPC' => 'accounts.getBalances')
         
-        json = MultiJson.decode(page.body)
+        json = MultiJson.load(page.body)
 
         accounts = []
         json['result'].each do |account|
