@@ -23,7 +23,7 @@ module Syrup
 
         # List accounts
         page = agent.get('https://banking.zionsbank.com/ibuir/displayAccountBalance.htm')
-        json = MultiJson.decode(page.body)
+        json = MultiJson.load(page.body)
 
         accounts = []
         json['accountBalance']['depositAccountList'].each do |account|
@@ -126,15 +126,22 @@ module Syrup
           # Enter the username
           page = agent.get('https://www.zionsbank.com')
           form = page.form('logonForm')
+          form.pm_fp = "version%3D1%26pm%5Ffpua%3Dmozilla%2F5%2E0%20%28windows%20nt%206%2E1%3B%20wow64%29%20applewebkit%2F535%2E19%20%28khtml%2C%20like%20gecko%29%20chrome%2F18%2E0%2E1025%2E162%20safari%2F535%2E19%7C5%2E0%20%28Windows%20NT%206%2E1%3B%20WOW64%29%20AppleWebKit%2F535%2E19%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F18%2E0%2E1025%2E162%20Safari%2F535%2E19%7CWin32%26pm%5Ffpsc%3D32%7C1920%7C1200%7C1200%26pm%5Ffpsw%3D%7Cqt1%7Cqt2%7Cqt3%7Cqt4%7Cqt5%7Cqt6%26pm%5Ffptz%3D%2D6%26pm%5Ffpln%3Dlang%3Den%2DUS%7Csyslang%3D%7Cuserlang%3D%26pm%5Ffpjv%3D1%26pm%5Ffpco%3D1"
           form.publicCred1 = username
           page = form.submit
-          
+
           # If the supplied username is incorrect, raise an exception
           raise InformationMissingError, "Invalid username" if page.title == "Error Page"
 
           # Go on to the next page
           page = page.links.first.click
 
+          refresh = page.body.match /meta http-equiv="Refresh" content="0; url=([^"]+)/
+          if refresh
+            url = refresh[1]
+            page = agent.get("https://securentry.zionsbank.com#{url}")
+          end
+          
           # Skip the secret question if we are prompted for the password
           unless page.body.include?("Site Validation and Password")
             # Find the secret question
