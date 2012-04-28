@@ -2,7 +2,6 @@
 **/*.swp
 *.gem
 .bundle
-Gemfile.lock
 pkg/*
 doc/*
 .DS_Store
