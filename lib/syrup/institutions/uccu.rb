@@ -36,8 +36,8 @@ module Syrup
           new_account = Account.new(:id => account['accountIndex'], :institution => self)
           new_account.name = unescape_html(account['displayName'][/^[^(]*/, 0].strip)
           new_account.account_number = account['displayName'][/\(([*0-9-]+)\)/, 1]
-          new_account.current_balance = BigDecimal.new(account['current'])
-          new_account.available_balance = BigDecimal.new(account['available'])
+          new_account.current_balance = BigDecimal.new(account['current'].to_s)
+          new_account.available_balance = BigDecimal.new(account['available'].to_s)
           # new_account.type = :deposit # :credit
           
           accounts << new_account
@@ -125,8 +125,13 @@ module Syrup
           raise InformationMissingError, "Invalid username or password" if page.body.include?("Login not accepted.") || page.body.include?("Please enter a valid signon ID.") || page.body.include?("Please enter a valid Password.")
 
           # Secret questions???
-          
-          raise "Unknown URL reached. Try logging in manually through a browser." if page.uri.to_s != "https://pb.uccu.com/UCCU/Accounts/Overview.aspx"
+
+          if page.uri.to_s != "https://pb.uccu.com/UCCU/Accounts/Overview.aspx"
+            page = agent.get('https://pb.uccu.com/UCCU/Accounts/Activity.aspx')
+            if page.body.include?("Please enter your User ID and Password below.") || page.body.include?("Your Online Banking session has expired.")
+              raise "Unknown URL reached. Try logging in manually through a browser." 
+            end
+          end
         end
         
         true
