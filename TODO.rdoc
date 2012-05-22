@@ -1,6 +1,4 @@
 
-Make sure that mechanize validates SSL certificates
-
 When getting transactions
 * populate as many variables on Account as you can (eg. current_balance, etc.)
 
