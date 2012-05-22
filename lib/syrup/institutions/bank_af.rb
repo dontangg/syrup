@@ -32,12 +32,7 @@ module Syrup
           cells = row_element.css('td')
 
           new_account = Account.new(:institution => self)
-
-          new_account.name = cells[1].inner_text.strip
-          #new_account.account_number = 
-          new_account.current_balance = BigDecimal.new(parse_currency(cells[2].inner_text))
-          #new_account.available_balance = 
-          # new_account.type = :deposit # :credit
+          populate_account_from_cells(new_account, cells)
 
           accounts << new_account
         end
@@ -45,64 +40,124 @@ module Syrup
         accounts
       end
 
-      def fetch_transactions(account_id, starting_at, ending_at)
-        ensure_authenticated
+      def populate_account_from_cells(account, cells)
+        account.id = cells[1].inner_text.strip
+        account.name = account.id
+        # account.account_number = 
+        account.current_balance = BigDecimal.new(parse_currency(cells[2].inner_text))
+        account.available_balance = account.current_balance
+        # account.type = :deposit # :credit
+      end
 
-        transactions = []
-        #TranDays=&From=4%2F01%2F2012&To=4%2F30%2F2012&BeginAmount=0000000000000&EndAmount=0000000000000&StartCheckNumber=&EndCheckNumber=&sortField1=D&sortField2=&sortField3=&sortField4=&DescendingOrderFlag=D&CreditsFlag=Y&DebitsFlag=Y&ChecksFlag=Y&ElecTxnsFlag=Y&CurrentOrRange=Range
-        params = {'TranDays' => nil, 'From' => starting_at.strftime('%e/%d/%Y'), 'To' => ending_at.strftime('%e/%d/%Y'), 'BeginAmount' => '0000000000000', 'EndAmount' => '0000000000000', 'StartCheckNumber' => nil, 'EndCheckNumber' => nil, 'sortField1' => 'D', 'sortField2' => nil, 'sortField3' => nil, 'sortField4' => nil, 'DescendingOrderFlag' => 'D', 'CreditsFlag' => 'Y', 'DebitsFlag' => 'Y', 'ChecksFlag' => 'Y', 'ElecTxnsFlag' => 'Y', 'CurrentOrRange' => 'Range' }
-        page = agent.get("https://www.netteller.com/bankaf/hbAccountDetails.cfm?", params)
-
-
-        File.open('test.html', 'w') do |f|
+      def write_page(page, unique)
+        File.open("test#{unique}.html", 'w') do |f|
           f.write page.uri.to_s
           f.write page.body
         end
+      end
 
-        page = page.forms[0].submit
+      def get_event_target(html)
+        match = /doPostBack\('([^'"]+)'/.match(html)
+        match[1].gsub(/%24/, '$')
+      end
 
-        form.ddlAccounts = account_id
-        form.ddlType = 0 # 0 = All types of transactions
-        form.field_with(:id => 'txtFromDate_textBox').value = starting_at.month.to_s + '/' + starting_at.strftime('%e/%Y').strip
-        form.field_with(:id => 'txtToDate_textBox').value = ending_at.month.to_s + '/' + ending_at.strftime('%e/%Y').strip
-        submit_button = form.button_with(:name => 'btnSubmitHistoryRequest')
-        page = form.submit(submit_button)
+      def fetch_transactions(account_id, starting_at, ending_at)
+        ensure_authenticated
 
-        # Look for the account balance
-        account = find_account_by_id(account_id)
-        page.search('.summaryTable tr').each do |row_element|
-          first_cell_text = ''
-          row_element.children.each do |cell_element|
-            if first_cell_text.empty?
-              first_cell_text = cell_element.content.strip if cell_element.respond_to? :name
+        # Get the accounts page and click on the desired account link
+        page = agent.get('https://cm.netteller.com/login2008/Views/Retail/AccountListing.aspx')
+
+        form = page.form('aspnetForm')
+        event_target = nil
+        page.search('#ctl00_PageContent_ctl00__acctsBase__depositsTab__depositsGrid tr').each do |row_element|
+          next if row_element["class"] == "th"
+
+          cells = row_element.css('td')
+
+          if cells[1].inner_text.strip == account_id
+            account = find_account_by_id(account_id)
+            populate_account_from_cells(account, cells)
+            event_target = get_event_target(cells[1].inner_html)
+          end
+        end
+        raise InformationMissingError, "Invalid account ID: #{account_id}" unless event_target
+        form["__EVENTTARGET"] = event_target
+        page = form.submit
+
+        # Click the search button (we want to be able to specify a date range)
+        form = page.form('aspnetForm')
+        form["__EVENTTARGET"] = "ctl00$ctl14$retailTransactionsTertiaryMenuSearchMenuItemLinkButton"
+        page = form.submit
+
+        # Tranferring to Coldfusion
+        form = page.forms[0]
+        form.action = "https://www.netteller.com/bankaf/hbTransactionsSelect.cfm"
+        page = form.submit
+
+        # Submitting the search form
+        form = page.forms[0]
+        form["from"] = starting_at.strftime('%m/%d/%Y')
+        form["to"] = ending_at.strftime('%m/%d/%Y')
+        form["sortField1"] = "D"
+        form["CreditsDebits"] = "CreditsAndDebits"
+        form.radiobutton_with(:name => "DescendingOrderFlag", :value => 'D').check
+        form.checkbox_with(:name => "ChecksFlag").check
+        form.checkbox_with(:name => "ElecTxnsFlag").check
+        form.field_with(:name => 'AccountIndex').options.each do |option|
+          option.select if option.text.strip == account_id
+        end
+        page = form.submit
+        
+        # Go back to .NET
+        form = page.forms[0]
+        page = form.submit
+
+        write_page(page, 5)
+
+        # Get the transactions!
+        transactions = []
+        page_number = 1
+        has_more_pages = true
+
+        while has_more_pages
+          page.search('#ctl00_PageContent_ctl00__transBase__tab__transactionsDataGrid tr').each do |row_element|
+            next if row_element["class"] == "th" || row_element["class"] == "Total"
+
+            cells = row_element.css('td')
+
+            if row_element["class"] == "pager"
+              # Check for more pages of transactions
+              page_number += 1
+              has_more_pages = false
+              cells[0].css('a').each do |link|
+                if link.inner_text.strip == page_number.to_s
+                  event_target = get_event_target(link.to_html)
+                  form = page.forms[0]
+                  form["__EVENTTARGET"] = event_target
+                  page = form.submit
+                  has_more_pages = true
+                end
+              end 
             else
-              content = cell_element.content.strip
-              case first_cell_text
-              when "Available Balance:"
-                account.available_balance = parse_currency(content) if content.match(/\d+/)
-              when "Current Balance:"
-                account.current_balance = parse_currency(content) if content.match(/\d+/)
+              cells = cells.to_a.map! { |cell| cell.inner_text.strip }
+
+              txn = Transaction.new
+
+              txn.posted_at = Date.strptime(cells[0], '%m/%d/%Y')
+              txn.payee = unescape_html(cells[3])
+              if cells[5].include?('$')
+                txn.amount = parse_currency(cells[5])
+              elsif cells[8].include?('$')
+                txn.amount = parse_currency(cells[8])
               end
+              running_balance = parse_currency(cells[10])
+              txn.status = :posted
+
+              transactions << txn
             end
           end
         end
-
-        # Get all the transactions
-        page.search('#ctlAccountActivityChecking tr').each do |row_element|
-          next if row_element['class'] == 'header'
-
-          data = row_element.css('td').map {|element| element.content.strip }
-
-          transaction = Transaction.new
-          transaction.posted_at = Date.strptime(data[0], '%m/%d/%Y')
-          transaction.payee = unescape_html(data[3])
-          transaction.status = :posted # :pending
-          transaction.amount = -parse_currency(data[4]) if data[4].match(/\d+/)
-          transaction.amount = parse_currency(data[5]) if data[5].match(/\d+/)
-
-          transactions << transaction
-        end
-
+        
         transactions
       end
 
@@ -141,6 +196,7 @@ module Syrup
             page = form.submit(submit_button)
 
             # TODO: What if the secret questions' answers were incorrect
+            write_page(page, 'sq')
           end
 
           form = page.forms[0]
