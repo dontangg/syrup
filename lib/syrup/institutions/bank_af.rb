@@ -117,8 +117,6 @@ module Syrup
           raise InformationMissingError, "Please supply a username" unless self.username
           raise InformationMissingError, "Please supply a password" unless self.password
 
-          @agent = Mechanize.new
-
           # Enter the username and password
           login_vars = { 'ID' => username, 'PIN' => password }
           page = agent.post('https://cm.netteller.com/login2008/Authentication/Views/Login.aspx?fi=bankaf&bn=9de8ca724dd43418&burlid=dc1ba449ca4ad5c0', login_vars)
@@ -130,8 +128,7 @@ module Syrup
           form["ctl00$PageContent$DevicePrintHiddenField"] = "version=1&pm_fpua=mozilla/5.0 (macintosh; intel mac os x 10.7; rv:11.0) gecko/20100101 firefox/11.0|5.0 (Macintosh)|MacIntel&pm_fpsc=24|1280|800|774&pm_fpsw=&pm_fptz=-6&pm_fpln=lang=en-US|syslang=|userlang=&pm_fpjv=1&pm_fpco=1"
           page = form.submit
 
-          # TODO: figure out exactly what to do for secret questions
-          if page.uri.to_s != "https://cm.netteller.com/login2008/Authentication/Views/LoginTransferToColdfusion.aspx"
+          if page.uri.to_s == "https://cm.netteller.com/login2008/Authentication/Views/ChallengeQuestions.aspx"
             form = page.forms[0]
             question1 = page.search('#ctl00_PageContent_Question1Label').inner_text
             form["ctl00$PageContent$Answer1TextBox"] = secret_questions[question1]
@@ -139,7 +136,11 @@ module Syrup
             question2 = page.search('#ctl00_PageContent_Question2Label').inner_text
             form["ctl00$PageContent$Answer2TextBox"] = secret_questions[question2]
 
-            page = form.submit
+            submit_button = form.button_with(:name => 'ctl00$PageContent$SubmitButton')
+
+            page = form.submit(submit_button)
+
+            # TODO: What if the secret questions' answers were incorrect
           end
 
           form = page.forms[0]
