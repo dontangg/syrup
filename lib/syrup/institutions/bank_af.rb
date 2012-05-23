@@ -1,8 +1,23 @@
 require 'date'
 require 'bigdecimal'
+require 'csv'
 
 module Syrup
   module Institutions
+
+
+class CSVParser < Mechanize::File
+  attr_reader :csv
+
+  def initialize uri = nil, response = nil, body = nil, code = nil
+    super uri, response, body, code
+    @csv = CSV.parse body
+    File.open('test.csv', 'w') do |f|
+      f.write body
+    end
+  end
+end
+
     class BankAf < InstitutionBase
 
       class << self
@@ -57,7 +72,7 @@ module Syrup
       end
 
       def get_event_target(html)
-        match = /doPostBack\('([^'"]+)'/.match(html)
+        match = /doPostBack\('([^'"\\]+)'/.match(html)
         match[1].gsub(/%24/, '$')
       end
 
@@ -77,37 +92,38 @@ module Syrup
           if cells[1].inner_text.strip == account_id
             account = find_account_by_id(account_id)
             populate_account_from_cells(account, cells)
-            event_target = get_event_target(cells[1].inner_html)
+            event_target = cells[4].css('select')[0]["name"]
           end
         end
         raise InformationMissingError, "Invalid account ID: #{account_id}" unless event_target
         form["__EVENTTARGET"] = event_target
-        page = form.submit
-
-        # Click the search button (we want to be able to specify a date range)
-        form = page.form('aspnetForm')
-        form["__EVENTTARGET"] = "ctl00$ctl14$retailTransactionsTertiaryMenuSearchMenuItemLinkButton"
+        form.field_with(:name => 'ctl00$PageContent$ctl00$_acctsBase$_depositsTab$_depositsGrid$ctl02$_activity').option_with(:value => "TransactionDownloadViewAction").select
         page = form.submit
 
         # Tranferring to Coldfusion
         form = page.forms[0]
-        form.action = "https://www.netteller.com/bankaf/hbTransactionsSelect.cfm"
+        form.action = "https://www.netteller.com/bankaf/hbProcessRequest.cfm?activity=D"
         page = form.submit
 
-        # Submitting the search form
+        # Submit the download request form
         form = page.forms[0]
+        form.field_with(:name => 'AccountIndex').option_with(:text => account_id).select
+        form.field_with(:name => 'trans').option_with(:value => 'BetweenTwoDates').select
+        form.field_with(:name => 'format').option_with(:value => 'CSV').select
+        form.action = "hbTransactionsDownload.cfm"
+        page = form.submit
+
+@agent.pluggable_parser.csv = CSVParser
+
+        # Put the dates in the form
         form["from"] = starting_at.strftime('%m/%d/%Y')
         form["to"] = ending_at.strftime('%m/%d/%Y')
-        form["sortField1"] = "D"
-        form["CreditsDebits"] = "CreditsAndDebits"
-        form.radiobutton_with(:name => "DescendingOrderFlag", :value => 'D').check
-        form.checkbox_with(:name => "ChecksFlag").check
-        form.checkbox_with(:name => "ElecTxnsFlag").check
-        form.field_with(:name => 'AccountIndex').options.each do |option|
-          option.select if option.text.strip == account_id
-        end
-        page = form.submit
+        submit_button = form.button_with(:id => 'submitButton')
+        p form.action
+        p form.submit(submit_button)
         
+        write_page(page, 0); return
+
         # Go back to .NET
         form = page.forms[0]
         page = form.submit
