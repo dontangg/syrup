@@ -112,8 +112,6 @@ module Syrup
         form = page.forms[0]
         page = form.submit
 
-        write_page(page, 5)
-
         # Get the transactions!
         transactions = []
         page_number = 1
@@ -141,19 +139,21 @@ module Syrup
             else
               cells = cells.to_a.map! { |cell| cell.inner_text.strip }
 
-              txn = Transaction.new
+              if !cells[0].empty?
+                txn = Transaction.new
 
-              txn.posted_at = Date.strptime(cells[0], '%m/%d/%Y')
-              txn.payee = unescape_html(cells[3])
-              if cells[5].include?('$')
-                txn.amount = parse_currency(cells[5])
-              elsif cells[8].include?('$')
-                txn.amount = parse_currency(cells[8])
+                txn.posted_at = Date.strptime(cells[0], '%m/%d/%Y')
+                txn.payee = unescape_html(cells[3])
+                if cells[5].include?('$')
+                  txn.amount = parse_currency(cells[5])
+                elsif cells[8].include?('$')
+                  txn.amount = parse_currency(cells[8])
+                end
+                running_balance = parse_currency(cells[10])
+                txn.status = :posted
+
+                transactions << txn
               end
-              running_balance = parse_currency(cells[10])
-              txn.status = :posted
-
-              transactions << txn
             end
           end
         end
@@ -196,7 +196,7 @@ module Syrup
             page = form.submit(submit_button)
 
             # TODO: What if the secret questions' answers were incorrect
-            write_page(page, 'sq')
+            #write_page(page, 'sq')
           end
 
           form = page.forms[0]
