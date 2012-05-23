@@ -139,7 +139,7 @@ module Syrup
             else
               cells = cells.to_a.map! { |cell| cell.inner_text.strip }
 
-              if !cells[0].empty?
+              if cells[0] =~ %r{\d+/\d+/\d+}
                 txn = Transaction.new
 
                 txn.posted_at = Date.strptime(cells[0], '%m/%d/%Y')
