@@ -151,7 +151,7 @@ module Syrup
       # 
       #   parse_currency('$ 1,234.56') #=> 1234.56
       def parse_currency(currency)
-        BigDecimal.new(currency.gsub(/[^0-9.]/, ''))
+        BigDecimal.new(currency.gsub(/[^0-9.-]/, ''))
       end
       
       # A helper method that replaces a few HTML entities with their actual characters
