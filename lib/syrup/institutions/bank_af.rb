@@ -1,22 +1,10 @@
 require 'date'
 require 'bigdecimal'
+require 'bigdecimal/util'
 require 'csv'
 
 module Syrup
   module Institutions
-
-
-class CSVParser < Mechanize::File
-  attr_reader :csv
-
-  def initialize uri = nil, response = nil, body = nil, code = nil
-    super uri, response, body, code
-    @csv = CSV.parse body
-    File.open('test.csv', 'w') do |f|
-      f.write body
-    end
-  end
-end
 
     class BankAf < InstitutionBase
 
@@ -47,21 +35,17 @@ end
           cells = row_element.css('td')
 
           new_account = Account.new(:institution => self)
-          populate_account_from_cells(new_account, cells)
+          new_account.id = cells[1].inner_text.strip
+          new_account.name = new_account.id
+          new_account.available_balance = BigDecimal.new(parse_currency(cells[2].inner_text))
+          # new_account.current_balance = 
+          # new_account.account_number = 
+          # new_account.type = :deposit # :credit
 
           accounts << new_account
         end
 
         accounts
-      end
-
-      def populate_account_from_cells(account, cells)
-        account.id = cells[1].inner_text.strip
-        account.name = account.id
-        # account.account_number = 
-        account.current_balance = BigDecimal.new(parse_currency(cells[2].inner_text))
-        account.available_balance = account.current_balance
-        # account.type = :deposit # :credit
       end
 
       def write_page(page, unique)
@@ -73,7 +57,7 @@ end
 
       def get_event_target(html)
         match = /doPostBack\('([^'"\\]+)'/.match(html)
-        match[1].gsub(/%24/, '$')
+                             match[1].gsub(/%24/, '$')
       end
 
       def fetch_transactions(account_id, starting_at, ending_at)
@@ -90,8 +74,6 @@ end
           cells = row_element.css('td')
 
           if cells[1].inner_text.strip == account_id
-            account = find_account_by_id(account_id)
-            populate_account_from_cells(account, cells)
             event_target = cells[4].css('select')[0]["name"]
           end
         end
@@ -109,71 +91,38 @@ end
         form = page.forms[0]
         form.field_with(:name => 'AccountIndex').option_with(:text => account_id).select
         form.field_with(:name => 'trans').option_with(:value => 'BetweenTwoDates').select
-        form.field_with(:name => 'format').option_with(:value => 'CSV').select
-        form.action = "hbTransactionsDownload.cfm"
-        page = form.submit
-
-@agent.pluggable_parser.csv = CSVParser
-
-        # Put the dates in the form
+        form.field_with(:name => 'format').option_with(:value => 'QFX').select
         form["from"] = starting_at.strftime('%m/%d/%Y')
         form["to"] = ending_at.strftime('%m/%d/%Y')
         submit_button = form.button_with(:id => 'submitButton')
-        p form.action
-        p form.submit(submit_button)
-        
-        write_page(page, 0); return
+        page = form.submit(submit_button)
 
-        # Go back to .NET
-        form = page.forms[0]
-        page = form.submit
+        page = page.link_with(:href => /DeliverContent/).click
 
         # Get the transactions!
         transactions = []
-        page_number = 1
-        has_more_pages = true
+        account = find_account_by_id(account_id)
+        page.body.each_line do |line|
+          line.strip!
 
-        while has_more_pages
-          page.search('#ctl00_PageContent_ctl00__transBase__tab__transactionsDataGrid tr').each do |row_element|
-            next if row_element["class"] == "th" || row_element["class"] == "Total"
+          if line.start_with?("<STMTTRN>")
+            match = /DTPOSTED>(\d+)<TRNAMT>\s?([0-9.-]+).*NAME>([^<]+)/.match(line)
+            txn = Transaction.new
 
-            cells = row_element.css('td')
+            txn.posted_at = Date.strptime(match[1][0..7], '%Y%m%d')
+            txn.amount = parse_currency(match[2])
+            txn.payee = match[3].strip
+            txn.status = :posted
 
-            if row_element["class"] == "pager"
-              # Check for more pages of transactions
-              page_number += 1
-              has_more_pages = false
-              cells[0].css('a').each do |link|
-                if link.inner_text.strip == page_number.to_s
-                  event_target = get_event_target(link.to_html)
-                  form = page.forms[0]
-                  form["__EVENTTARGET"] = event_target
-                  page = form.submit
-                  has_more_pages = true
-                end
-              end 
-            else
-              cells = cells.to_a.map! { |cell| cell.inner_text.strip }
-
-              if cells[0] =~ %r{\d+/\d+/\d+}
-                txn = Transaction.new
-
-                txn.posted_at = Date.strptime(cells[0], '%m/%d/%Y')
-                txn.payee = unescape_html(cells[3])
-                if cells[5].include?('$')
-                  txn.amount = parse_currency(cells[5])
-                elsif cells[8].include?('$')
-                  txn.amount = parse_currency(cells[8])
-                end
-                running_balance = parse_currency(cells[10])
-                txn.status = :posted
-
-                transactions << txn
-              end
-            end
+            transactions << txn
+          elsif line.start_with?("</BANKTRANLIST>")
+            match = /LEDGERBAL><BALAMT>([0-9.-]+).*AVAILBAL><BALAMT>([0-9.-]+)/.match(line)
+            account.name = account.id
+            account.current_balance = match[1].to_d
+            account.available_balance = match[2].to_d
           end
         end
-        
+
         transactions
       end
 
