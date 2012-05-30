@@ -140,7 +140,7 @@ module Syrup
 
           # Provide path to cert bundle for Windows
           # Downloaded from http://curl.haxx.se/ca/
-          @agent.agent.http.ca_file = File.expand_path(File.dirname(__FILE__) + "/cacert.pem") if RUBY_PLATFORM =~ /mingw|mswin/i
+          @agent.agent.http.ca_file = File.expand_path(File.dirname(__FILE__) + "/cacert.pem")
         end
 
         @agent
