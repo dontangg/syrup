@@ -59,7 +59,6 @@ module Syrup
 
         transactions = []
 
-        account_id = "679793|aWQ9Njc5Nzkz"
         act_oid, act_attr = account_id.split('|')
 
         url = "https://banking.zionsbank.com/olb/retail/protected/account/register/account?attr=#{act_attr}&#{@csrf}"
@@ -72,40 +71,54 @@ module Syrup
         form['fromDate'] = starting_at.strftime('%m/%d/%Y')
         form['toDate'] = ending_at.strftime('%m/%d/%Y')
         submit_button = form.button_with(:id => 'formbutton')
-        puts "submitting..."
         page = form.submit(submit_button)
-
-        // if #pagination isn't there, then there aren't any more pages
-
-        #File.open("page.html", 'w') { |file| file.write(page.body) }
-        #puts "written"
 
         # Look for the account information first
         account = find_account_by_id(account_id)
         page.search('#subCell').first.element_children.each do |element|
           if element.name == "div"
-            #p "\n#{element.inner_text}\n"
             if match = /Prior Day Balance:\s*\$([0-9.,]+)/.match(element.inner_text)
               account.prior_day_balance = parse_currency(match[1])
-              p account.prior_day_balance.to_f
             elsif match = /Current Balance:\s*\$([0-9.,]+)/.match(element.inner_text)
               account.current_balance = parse_currency(match[1])
-              p account.current_balance.to_f
             elsif match = /Available Balance:\s*\$([0-9.,]+)/.match(element.inner_text)
               account.available_balance = parse_currency(match[1])
-              p account.available_balance.to_f
             end
           end
         end
 
         # Get all the transactions
+        include_pending = true
+        begin
+          transactions += get_transactions_from_page(page, include_pending)
+
+          has_next_page = false
+          pagination_div = page.search('#pagination').first
+          if pagination_div # if #pagination isn't there, then there aren't any more pages
+            next_page_link = pagination_div.search('.prevnext').last
+            if next_page_link.inner_text.strip.downcase == 'next'
+              url = "#{next_page_link['href']}&#{@csrf}"
+              page = agent.get(url)
+              has_next_page = true
+              include_pending = false # The pending txns are included on every page, so don't get them again when we switch pages
+            end
+          end
+        end while has_next_page
+
+        transactions
+      end
+
+      def get_transactions_from_page(page, include_pending)
+        transactions = []
+
         page.search('#RegisterCntBox .list_table tr').each do |row_element|
-          account = find_account_by_id(account_id)
-
-
 
           date_cell = row_element.search('.table_column_0').first
           if date_cell
+            status_image = row_element.search('.table_column_3 img').first
+            status = status_image['alt'] == 'Cleared' ? :posted : :pending
+            next unless status == :posted || include_pending
+
             transaction = Transaction.new
 
             transaction.posted_at = Date.strptime(date_cell.inner_text.strip, '%m/%d/%Y')
@@ -113,19 +126,22 @@ module Syrup
             payee_cell = row_element.search('.table_column_2 .printdisplay .changeText').first || row_element.search('.table_column_2').first
             transaction.payee = payee_cell.inner_text.strip
 
-            p transaction
+            transaction.status = status
+
+            debit_amount_cell = row_element.search('.table_column_4').first
+            debit_amount = debit_amount_cell.inner_text.strip
+            unless debit_amount.empty?
+              transaction.amount = -parse_currency(debit_amount)
+            end
+
+            credit_amount_cell = row_element.search('.table_column_5').first
+            credit_amount = credit_amount_cell.inner_text.strip
+            unless credit_amount.empty?
+              transaction.amount = parse_currency(credit_amount)
+            end
 
             transactions << transaction
           end
-
-          #transaction.payee = unescape_html(data[2])
-          #transaction.status = data[3].include?("Posted") ? :posted : :pending
-          #unless data[4].empty?
-          #  transaction.amount = -parse_currency(data[4])
-          #end
-          #unless data[5].empty?
-          #  transaction.amount = parse_currency(data[5])
-          #end
 
         end
 
@@ -190,8 +206,6 @@ module Syrup
         token_value = page.search('#csrfTokenValue').text
 
         @csrf = "#{token_name}=#{token_value}"
-
-        puts "Logged in!"
 
         true
       end
