@@ -108,6 +108,10 @@ module Syrup
         transactions
       end
 
+      def get_value(value)
+        value.gsub("\u00A0", " ").strip
+      end
+
       def get_transactions_from_page(page, include_pending)
         transactions = []
 
@@ -121,21 +125,21 @@ module Syrup
 
             transaction = Transaction.new
 
-            transaction.posted_at = Date.strptime(date_cell.inner_text.strip, '%m/%d/%Y')
+            transaction.posted_at = Date.strptime(get_value(date_cell.inner_text), '%m/%d/%Y')
 
             payee_cell = row_element.search('.table_column_2 .printdisplay .changeText').first || row_element.search('.table_column_2').first
-            transaction.payee = payee_cell.inner_text.strip
+            transaction.payee = get_value(payee_cell.inner_text)
 
             transaction.status = status
 
             debit_amount_cell = row_element.search('.table_column_4').first
-            debit_amount = debit_amount_cell.inner_text.strip
+            debit_amount = get_value(debit_amount_cell.inner_text)
             unless debit_amount.empty?
               transaction.amount = -parse_currency(debit_amount)
             end
 
             credit_amount_cell = row_element.search('.table_column_5').first
-            credit_amount = credit_amount_cell.inner_text.strip
+            credit_amount = get_value(credit_amount_cell.inner_text)
             unless credit_amount.empty?
               transaction.amount = parse_currency(credit_amount)
             end

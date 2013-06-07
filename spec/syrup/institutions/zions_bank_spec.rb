@@ -28,7 +28,9 @@ describe ZionsBank, :bank_integration => true do
     account.instance_variable_get(:@current_balance).should be_nil
     account.instance_variable_get(:@available_balance).should be_nil
 
-    @bank.fetch_transactions(account_id, Date.today - 30, Date.today)
+    txns = @bank.fetch_transactions(account_id, Date.today - 30, Date.today)
+
+    txns.count.should_not equal(0)
 
     puts "Prior day balance: $#{account.prior_day_balance.to_f}"
     puts "Current balance: $#{account.current_balance.to_f}"
