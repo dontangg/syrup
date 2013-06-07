@@ -1,3 +1,7 @@
+0.0.14 (Jun 6, 2013)
+
+* support new Zions Bank website
+
 0.0.3 (Jun 29, 2011)
 
 * removed activesupport dependency in favor of multi_json
