@@ -4,7 +4,7 @@ describe Syrup do
   it "lists all institutions" do
     institution_list = Syrup.institutions
     
-    institution_list.size.should be(2)
+    institution_list.size.should be(3)
     
     institution_list.should include(Institutions::ZionsBank)
     
