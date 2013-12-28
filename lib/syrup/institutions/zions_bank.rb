@@ -61,8 +61,8 @@ module Syrup
 
         act_oid, act_attr = account_id.split('|')
 
-        url = "https://banking.zionsbank.com/olb/retail/protected/account/register/account?attr=#{act_attr}&#{@csrf}"
-        page = agent.get(url)
+        url = "https://banking.zionsbank.com/olb/retail/protected/account/register/account?attr=#{act_attr}&BreakoutLoadableContent=true&#{@csrf}"
+        page = agent.post(url)
 
         form = page.forms.first
         form.action += "?#{@csrf}" unless form.action.include?(@csrf)
@@ -72,6 +72,8 @@ module Syrup
         form['toDate'] = ending_at.strftime('%m/%d/%Y')
         submit_button = form.button_with(:id => 'formbutton')
         page = form.submit(submit_button)
+
+        #File.open('/Users/don/Desktop/test.html', 'w') { |file| file.write(page.body) }
 
         # Look for the account information first
         account = find_account_by_id(account_id)
@@ -119,13 +121,16 @@ module Syrup
 
           date_cell = row_element.search('.table_column_0').first
           if date_cell
+            date_cell_text = get_value(date_cell.inner_text)
+            next if date_cell_text.empty?
+
             status_image = row_element.search('.table_column_3 img').first
             status = status_image['alt'] == 'Cleared' ? :posted : :pending
             next unless status == :posted || include_pending
 
             transaction = Transaction.new
 
-            transaction.posted_at = Date.strptime(get_value(date_cell.inner_text), '%m/%d/%Y')
+            transaction.posted_at = Date.strptime(date_cell_text, '%m/%d/%Y')
 
             payee_cell = row_element.search('.table_column_2 .printdisplay .changeText').first || row_element.search('.table_column_2').first
             transaction.payee = get_value(payee_cell.inner_text)
