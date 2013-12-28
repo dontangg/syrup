@@ -3,17 +3,17 @@ require 'bigdecimal'
 
 module Syrup
   module Institutions
-     class Uccu < InstitutionBase
-       
-       class << self
-         def name
-           "UCCU"
-         end
-         
-         def id
-           "uccu"
-         end
-       end
+    class Uccu < InstitutionBase
+      
+      class << self
+        def name
+          "UCCU"
+        end
+        
+        def id
+          "uccu"
+        end
+      end
       
       def fetch_account(account_id)
         fetch_accounts
