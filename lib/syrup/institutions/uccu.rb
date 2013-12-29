@@ -26,7 +26,7 @@ module Syrup
         page = agent.post('https://pb.uccu.com/UCCU/Ajax/RpcHandler.ashx',
                           '{"id":0,"method":"accounts.getBalances","params":[false]}',
                           'X-JSON-RPC' => 'accounts.getBalances')
-        
+
         json = MultiJson.load(page.body)
 
         accounts = []
@@ -77,7 +77,14 @@ module Syrup
         json = MultiJson.load(page.body)
         json['d']['Transactions'].each do |tran|
           transaction = Transaction.new
-          transaction.posted_at = tran['Date']
+
+          date = tran['Date']
+          if date.include?("-") || date.include?("+")
+            transaction.posted_at = Date.strptime(date, '/Date(%Q%z)/')
+          else
+            transaction.posted_at = Date.strptime(date, '/Date(%Q)/')
+          end
+
           transaction.payee = tran['Description']
           transaction.status = tran['IsPosted'] ? :posted : :pending
           transaction.amount = tran['IsDebit'] ? -tran['Amount'].to_d : tran['Amount'].to_d
@@ -130,7 +137,7 @@ module Syrup
         # File.open("C:\\users\\reed.wilson\\desktop\\html_tst.html", 'w') { |file| file.write(page.body) }
         
         # Get session id
-        return page.uri.to_s.scan(/af\(\w+\)/).to_s[5..-4]
+        return page.uri.to_s.scan(/af\((\w+)\)/)[0][0]
 
         # if page.body.include?("Please enter your User ID and Password below.") || page.body.include?("Your Online Banking session has expired.")
         #   raise "Unknown URL reached. Try logging in manually through a browser." 
