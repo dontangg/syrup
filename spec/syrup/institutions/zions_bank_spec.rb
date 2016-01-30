@@ -35,6 +35,7 @@ describe ZionsBank, :bank_integration => true do
     puts "Prior day balance: $#{account.prior_day_balance.to_f}"
     puts "Current balance: $#{account.current_balance.to_f}"
     puts "Available balance: $#{account.available_balance.to_f}"
+    puts "Transaction count: #{txns.count}"
 
     account.prior_day_balance.should_not be_nil
     account.current_balance.should_not be_nil

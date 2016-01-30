@@ -60,20 +60,25 @@ module Syrup
         transactions = []
 
         act_oid, act_attr = account_id.split('|')
+        timestamp = Time.new.to_i
 
-        url = "https://banking.zionsbank.com/olb/retail/protected/account/register/account?attr=#{act_attr}&BreakoutLoadableContent=true&#{@csrf}"
-        page = agent.post(url)
-
-        form = page.forms.first
-        form.action += "?#{@csrf}" unless form.action.include?(@csrf)
-        form["accountOid"] = act_oid
-        form["searchBy"] = "DR"
-        form['fromDate'] = starting_at.strftime('%m/%d/%Y')
-        form['toDate'] = ending_at.strftime('%m/%d/%Y')
-        submit_button = form.button_with(:id => 'formbutton')
-        page = form.submit(submit_button)
-
-        #File.open('/Users/don/Desktop/test.html', 'w') { |file| file.write(page.body) }
+        url = "https://banking.zionsbank.com/olb/retail/protected/account/register/search?#{@csrf}&atstamp=#{timestamp}"
+        page = agent.post(url, {
+          "accountOid" => act_oid,
+          "HFromDate" => starting_at.strftime('%m/%d/%Y'),
+          "HToDate" => ending_at.strftime('%m/%d/%Y'),
+          "fromDate" => starting_at.strftime('%m/%d/%Y'),
+          "toDate" => ending_at.strftime('%m/%d/%Y'),
+          "searchBy" => "DR",
+          "fromCheckNum" => "",
+          "toCheckNum" => "",
+          "keyword" => "",
+          "fromAmount" => "",
+          "toAmount" => "",
+          "transactionsByDepositOrWithdrawalAmount" => "deposits",
+          "sortBy" => "date",
+          "sortOrder" => "dsc"
+        })
 
         # Look for the account information first
         account = find_account_by_id(account_id)
@@ -88,6 +93,8 @@ module Syrup
             end
           end
         end
+
+        # File.write('/Users/don/Desktop/page.html', page.body)
 
         # Get all the transactions
         include_pending = true

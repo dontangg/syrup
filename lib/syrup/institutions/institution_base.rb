@@ -140,7 +140,8 @@ module Syrup
 
           # Provide path to cert bundle for Windows
           # Downloaded from http://curl.haxx.se/ca/
-          @agent.agent.http.ca_file = File.expand_path(File.dirname(__FILE__) + "/cacert.pem")
+          #@agent.agent.http.ca_file = File.expand_path(File.dirname(__FILE__) + "/cacert.pem")
+          @agent.agent.http.verify_mode = OpenSSL::SSL::VERIFY_NONE
         end
 
         @agent
