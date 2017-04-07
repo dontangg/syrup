@@ -22,9 +22,8 @@ describe Uccu, :bank_integration => true do
   
   it "fetches transactions given a date range" do
     account_id = '1|cookieVal'
-    acct_id, _ = account_id.split('|')
       
-    account = @bank.find_account_by_id(acct_id)
+    account = @bank.find_account_by_id(account_id)
     account.instance_variable_get(:@prior_day_balance).should be_nil
     account.instance_variable_get(:@current_balance).should be_nil
     account.instance_variable_get(:@available_balance).should be_nil
