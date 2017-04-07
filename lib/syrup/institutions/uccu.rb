@@ -41,7 +41,7 @@ module Syrup
         body['data']['transactions'].each do |tran|
           transaction = Transaction.new
           transaction.posted_at = DateTime.parse(tran['postedDate'])
-          transaction.payee = tran['description']
+          transaction.payee = tran['extended']['statementDescription'].squeeze(' ')
           transaction.status = tran['transactionType'] == 'History' ? :posted : :pending
           transaction.amount = tran['extended']['signedTxnAmount'].to_d
           transactions << transaction
