@@ -30,7 +30,7 @@ module Syrup
         acct_id, registration_cookie = account_id.split('|')
         ensure_authenticated(registration_cookie)
         # put the current and available balances on the account
-        populate_account_balances(acct_id)
+        populate_account_balances(account_id)
         transactions = []
         start_at = format_date(starting_at)
         end_at= format_date(ending_at)
@@ -54,7 +54,8 @@ module Syrup
 
 
       def populate_account_balances(account_id)
-        url = "https://online.uccu.com/ucfcuonline_42/mobilews/account/#{account_id}"
+        acct_id, _ = account_id.split('|')
+        url = "https://online.uccu.com/ucfcuonline_42/mobilews/account/#{acct_id}"
         page = get_page(url)
         account = find_account_by_id(account_id)
         body = MultiJson.load(page.body)
