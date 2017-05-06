@@ -131,7 +131,7 @@ module Syrup
             date_cell_text = get_value(date_cell.inner_text)
             next if date_cell_text.empty?
 
-            status_image = row_element.search('.table_column_4 img').first
+            status_image = row_element.search('.table_column_3 img').first
             status = status_image['alt'] == 'Cleared' ? :posted : :pending
             next unless status == :posted || include_pending
 
@@ -139,18 +139,18 @@ module Syrup
 
             transaction.posted_at = Date.strptime(date_cell_text, '%m/%d/%Y')
 
-            payee_cell = row_element.search('.table_column_3 .printdisplay .changeText').first || row_element.search('.table_column_3').first
+            payee_cell = row_element.search('.table_column_2 .printdisplay .changeText').first || row_element.search('.table_column_2').first
             transaction.payee = get_value(payee_cell.inner_text)
 
             transaction.status = status
 
-            debit_amount_cell = row_element.search('.table_column_5').first
+            debit_amount_cell = row_element.search('.table_column_4').first
             debit_amount = get_value(debit_amount_cell.inner_text)
             unless debit_amount.empty?
               transaction.amount = -parse_currency(debit_amount)
             end
 
-            credit_amount_cell = row_element.search('.table_column_6').first
+            credit_amount_cell = row_element.search('.table_column_5').first
             credit_amount = get_value(credit_amount_cell.inner_text)
             unless credit_amount.empty?
               transaction.amount = parse_currency(credit_amount)
