@@ -4,23 +4,23 @@ describe Syrup do
   it "lists all institutions" do
     institution_list = Syrup.institutions
     
-    institution_list.size.should be(3)
+    expect(institution_list.size).to be(3)
     
-    institution_list.should include(Institutions::ZionsBank)
+    expect(institution_list).to include(Institutions::ZionsBank)
     
     institution_list.each do |institution|
-      institution.should respond_to(:name)
-      institution.should respond_to(:id)
+      expect(institution).to respond_to(:name)
+      expect(institution).to respond_to(:id)
       
       inst = institution.new
-      inst.should respond_to(:fetch_account)
-      inst.should respond_to(:fetch_accounts)
-      inst.should respond_to(:fetch_transactions)
+      expect(inst).to respond_to(:fetch_account)
+      expect(inst).to respond_to(:fetch_accounts)
+      expect(inst).to respond_to(:fetch_transactions)
     end
   end
   
   it "returns nil if you try to setup an unknown institution" do
-    Syrup.setup_institution('unknown').should be_nil
+    expect(Syrup.setup_institution('unknown')).to be_nil
   end
   
   it "sets up a Zions Bank institution" do
@@ -34,8 +34,8 @@ describe Syrup do
       config.secret_questions = secret_questions
     end
     
-    zions.should_not be_nil
-    zions.class.should be(Syrup::Institutions::ZionsBank)
-    zions.username.should be(username)
+    expect(zions).not_to be_nil
+    expect(zions.class).to be(Syrup::Institutions::ZionsBank)
+    expect(zions.username).to be(username)
   end
 end

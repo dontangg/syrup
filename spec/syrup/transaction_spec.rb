@@ -7,15 +7,15 @@ describe Syrup::Transaction do
   end
   
   it "has an amount" do
-    @transaction.amount.should_not be_nil
+    expect(@transaction.amount).not_to be_nil
   end
   
   it "has a payee" do
-    @transaction.payee.should_not be_nil
+    expect(@transaction.payee).not_to be_nil
   end
   
   it "has a posted-at date" do
-    @transaction.posted_at.should_not be_nil
+    expect(@transaction.posted_at).not_to be_nil
   end
   
 end

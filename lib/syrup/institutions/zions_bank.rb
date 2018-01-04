@@ -175,7 +175,7 @@ module Syrup
 
         # Enter the username
         page = agent.get('https://www.zionsbank.com')
-        form = page.form('logonForm')
+        form = page.form_with(id: 'personalForm')
         form.publicCred1 = self.username
         form.privateCred1 = self.password
         page = form.submit

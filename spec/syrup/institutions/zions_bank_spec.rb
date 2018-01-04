@@ -21,24 +21,24 @@ describe ZionsBank, :bank_integration => true do
   end
 
   it "fetches transactions given a date range" do
-    account_id = "1|a"
+    account_id = ""
 
     account = @bank.find_account_by_id(account_id)
-    account.instance_variable_get(:@prior_day_balance).should be_nil
-    account.instance_variable_get(:@current_balance).should be_nil
-    account.instance_variable_get(:@available_balance).should be_nil
+    expect(account.instance_variable_get(:@prior_day_balance)).to be_nil
+    expect(account.instance_variable_get(:@current_balance)).to be_nil
+    expect(account.instance_variable_get(:@available_balance)).to be_nil
 
     txns = @bank.fetch_transactions(account_id, Date.today - 30, Date.today)
 
-    txns.count.should_not equal(0)
+    expect(txns.count).not_to equal(0)
 
     puts "Prior day balance: $#{account.prior_day_balance.to_f}"
     puts "Current balance: $#{account.current_balance.to_f}"
     puts "Available balance: $#{account.available_balance.to_f}"
     puts "Transaction count: #{txns.count}"
 
-    account.prior_day_balance.should_not be_nil
-    account.current_balance.should_not be_nil
-    account.available_balance.should_not be_nil
+    expect(account.prior_day_balance).not_to be_nil
+    expect(account.current_balance).not_to be_nil
+    expect(account.available_balance).not_to be_nil
   end
 end

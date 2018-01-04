@@ -19,18 +19,18 @@ describe Account do
   it "has lots of useful properties" do
     account = Account.new
 
-    account.should respond_to(:id)
-    account.should respond_to(:name)
-    account.should respond_to(:type)
-    account.should respond_to(:account_number)
-    account.should respond_to(:current_balance)
-    account.should respond_to(:available_balance)
-    account.should respond_to(:prior_day_balance)
+    expect(account).to respond_to(:id)
+    expect(account).to respond_to(:name)
+    expect(account).to respond_to(:type)
+    expect(account).to respond_to(:account_number)
+    expect(account).to respond_to(:current_balance)
+    expect(account).to respond_to(:available_balance)
+    expect(account).to respond_to(:prior_day_balance)
   end
   
   it "is populated when properties are accessed" do
     @account.instance_variable_get(:@name).should be_nil
-    @account.name.should == "my name"
+    expect(@account.name).to eq("my name")
   end
   
   it "is considered == if the id is the same" do
@@ -38,8 +38,8 @@ describe Account do
     account2 = Account.new :id => 1, :name => "savings"
     account3 = Account.new :id => 2, :name => "trash"
     
-    account1.should == account2
-    account1.should_not == account3
+    expect(account1).to eq(account2)
+    expect(account1).not_to eq(account3)
   end
   
   context "given a date range" do

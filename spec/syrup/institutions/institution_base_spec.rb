@@ -12,7 +12,7 @@ describe InstitutionBase do
   end
   
   it "keeps a list of classes that extend it" do
-    InstitutionBase.subclasses.should include(ZionsBank)
+    expect(InstitutionBase.subclasses).to include(ZionsBank)
   end
   
   it "can be setup" do
@@ -23,9 +23,9 @@ describe InstitutionBase do
       config.secret_questions = { 'Do you like candy?' => 'yes' }
     end
     
-    institution.username.should == 'username'
-    institution.password.should == 'pass'
-    institution.secret_questions['Do you like candy?'].should == 'yes'
+    expect(institution.username).to eq('username')
+    expect(institution.password).to eq('pass')
+    expect(institution.secret_questions['Do you like candy?']).to eq('yes')
   end
   
   context "when accounts are NOT populated" do
@@ -36,7 +36,7 @@ describe InstitutionBase do
     
     it "returns an account with the id populated" do
       account = @institution.find_account_by_id 21
-      account.id.should == 21
+      expect(account.id).to eq(21)
     end
     
     it "returns a previously created account if one exists" do
@@ -44,8 +44,8 @@ describe InstitutionBase do
       different_account = Account.new(:id => 3)
       
       new_account = @institution.find_account_by_id 3
-      new_account.should be(original_account)
-      new_account.should_not be(different_account)
+      expect(new_account).to be(original_account)
+      expect(new_account).not_to be(different_account)
     end
   end
   
@@ -61,7 +61,7 @@ describe InstitutionBase do
     
     it "returns nil if asked for a non-existent account" do
       account = @institution.find_account_by_id 21
-      account.should be_nil
+      expect(account).to be_nil
     end
   end
   
@@ -70,26 +70,26 @@ describe InstitutionBase do
     it "filters out non-existent accounts" do
       @institution.find_account_by_id 21
       @institution.accounts.each do |a|
-        a.id.should_not be(21)
+        expect(a.id).not_to be(21)
       end
     end
 
     it "populates data in existent accounts" do
       account = @institution.find_account_by_id 1
       @institution.populate_accounts
-      account.name.should == 'first'
+      expect(account.name).to eq('first')
     end
     
     it "marks accounts as populated" do
       @institution.accounts.each do |account|
-        account.populated?.should be_true
+        expect(account.populated?).to be(true)
       end
     end
     
     it "marks invalid accounts as invalid" do
       account = @institution.find_account_by_id 21
       @institution.populate_accounts
-      account.valid?.should be_false
+      expect(account.valid?).to be(false)
     end
   end
   
@@ -100,8 +100,8 @@ describe InstitutionBase do
       end
       
       account = @institution.populate_account(2)
-      account.name.should == 'single account'
-      account.populated?.should be_true
+      expect(account.name).to eq('single account')
+      expect(account.populated?).to be(true)
     end
     
     it "can populate all accounts" do
@@ -111,7 +111,7 @@ describe InstitutionBase do
       
       invalid_account = @institution.find_account_by_id 21
       @institution.populate_account(2)
-      @institution.populated?.should be_true
+      expect(@institution.populated?).to be(true)
     end
   end
   
