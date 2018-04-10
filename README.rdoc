@@ -37,9 +37,8 @@ In <b>Rails 2</b>, add this to your environment.rb file.
 
 == Supported Institutions
 
-Currently, only Zions Bank, UCCU, and Bank of American Fork are supported. I
-will be implementing UCCU, USAA, and Wells Fargo (probably in that order). If
-you would like support for a different bank, you have two options:
+Currently, only Zions Bank and UCCU are supported. If you would like support
+for a different bank, you have two options:
 
 1. Get me the credentials to log into an account with that bank (you'd have to
    trust me).
