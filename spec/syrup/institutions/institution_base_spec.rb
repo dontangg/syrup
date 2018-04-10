@@ -13,6 +13,7 @@ describe InstitutionBase do
   
   it "keeps a list of classes that extend it" do
     expect(InstitutionBase.subclasses).to include(ZionsBank)
+    expect(InstitutionBase.subclasses).to include(Uccu)
   end
   
   it "can be setup" do
