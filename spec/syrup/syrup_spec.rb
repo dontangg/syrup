@@ -7,6 +7,7 @@ describe Syrup do
     expect(institution_list.size).to be(3)
     
     expect(institution_list).to include(Institutions::ZionsBank)
+    expect(institution_list).to include(Institutions::Uccu)
     
     institution_list.each do |institution|
       expect(institution).to respond_to(:name)
@@ -36,6 +37,22 @@ describe Syrup do
     
     expect(zions).not_to be_nil
     expect(zions.class).to be(Syrup::Institutions::ZionsBank)
+    expect(zions.username).to be(username)
+  end
+
+  it "sets up a Uccu institution" do
+    username = "user"
+    password = "pass"
+    secret_questions = { 'Do you eat?' => 'yes' }
+    
+    zions = Syrup.setup_institution('uccu') do |config|
+      config.username = username
+      config.password = password
+      config.secret_questions = secret_questions
+    end
+    
+    expect(zions).not_to be_nil
+    expect(zions.class).to be(Syrup::Institutions::Uccu)
     expect(zions.username).to be(username)
   end
 end
